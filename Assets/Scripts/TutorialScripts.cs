@@ -44,7 +44,7 @@ public class IntroManager : MonoBehaviour
    
     IEnumerator MoveSequence()
     {
-        yield return StartCoroutine(TypeText("잘했습니다. 이제 눈 앞의 총기를 주워봅시다."));
+        yield return StartCoroutine(TypeText("잘했습니다. 이제 F키를 눌러 눈 앞의 총기를 주워봅시다."));
 
     }
 
