@@ -16,8 +16,7 @@ public class TutorialTrigger : MonoBehaviour
         // 플레이어 태그를 가진 오브젝트가 들어왔을 때만!
         if (other.CompareTag("Player"))
         {
-            introManager.PlayNewMessage(messageToDisplay);
-            Destroy(gameObject);
+            introManager.StartMoveSequence();
         }
     }
 }

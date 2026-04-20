@@ -42,7 +42,7 @@ public class ItemPickup : MonoBehaviour
     
     if (added)
     {
-                    Debug.Log($"[{instance.data.itemName}] x{instance.count} 획득");
+        Debug.Log($"[{instance.data.itemName}] x{instance.count} 획득");
         Destroy(hit.collider.gameObject);
     }
     else
