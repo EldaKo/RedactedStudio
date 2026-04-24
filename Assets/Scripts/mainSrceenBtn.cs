@@ -31,7 +31,7 @@ public class MainMenuManager : MonoBehaviour
     public void PlayGame()
     {
         Debug.Log("start clicked!");
-        SceneManager.LoadScene("CityMapScene");
+        SceneManager.LoadScene("DemoCity");
     }
     public void QuitGame()
     {
