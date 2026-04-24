@@ -8,15 +8,19 @@ public class EnemyAI : MonoBehaviour
     enum State { Idle, Chase, Attack, Dead }
 
     [Header("References")]
-    [Tooltip("사격 Raycast의 시작점 (무기 총구의 빈 GameObject)")]
     [SerializeField] Transform muzzle;
 
+    [Header("Body Aim (Optional)")]
+    [Tooltip("상체를 플레이어 쪽으로 기울일 본 (mixamorig_Spine1 권장)")]
+    [SerializeField] Transform aimBone;
+    [Tooltip("상체 조준 세기 (0 = 꺼짐, 1 = 완전히 플레이어 쪽)")]
+    [Range(0f, 1f)][SerializeField] float aimBoneWeight = 0.5f;
+    [Tooltip("본의 로컬 'forward'가 실제로 가리키는 방향 보정 (Euler 각도)")]
+    [SerializeField] Vector3 aimBoneLocalForwardFix = new Vector3(0f, 0f, 0f);
+
     [Header("Detection")]
-    [Tooltip("이 거리 내에 플레이어가 들어오면 추적 시작")]
     [SerializeField] float detectRange = 20f;
-    [Tooltip("이 거리 안으로 들어오면 정지하고 사격")]
     [SerializeField] float attackRange = 10f;
-    [Tooltip("이 거리 밖으로 멀어지면 추적 포기 (detectRange보다 커야 함)")]
     [SerializeField] float loseTargetRange = 25f;
 
     [Header("Movement")]
@@ -24,13 +28,10 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float turnSpeed = 8f;
 
     [Header("Combat")]
-    [Tooltip("1회 사격 간격 (초)")]
     [SerializeField] float fireRate = 0.4f;
     [SerializeField] float damage = 10f;
     [SerializeField] float maxHp = 100f;
-    [Tooltip("사격 Raycast가 충돌 가능한 레이어")]
     [SerializeField] LayerMask shootLayerMask = ~0;
-    [Tooltip("플레이어 몸통 중앙을 조준하기 위한 높이 보정")]
     [SerializeField] float aimHeightOffset = 1.0f;
 
     // --- internal ---
@@ -50,7 +51,7 @@ public class EnemyAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         agent.speed = moveSpeed;
-        agent.updateRotation = false; // 회전은 직접 제어 (조준 정확도)
+        agent.updateRotation = false;
         hp = maxHp;
     }
 
@@ -103,6 +104,23 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    // Animator가 본을 계산한 뒤에 상체를 플레이어 쪽으로 보정
+    void LateUpdate()
+    {
+        if (state != State.Attack || aimBone == null || target == null) return;
+
+        Vector3 aimPoint = target.position + Vector3.up * aimHeightOffset;
+        Vector3 dir = aimPoint - aimBone.position;
+        if (dir.sqrMagnitude < 0.01f) return;
+
+        // 월드 공간에서 목표 방향을 바라보는 회전
+        Quaternion lookRot = Quaternion.LookRotation(dir, Vector3.up);
+        // 본의 축이 실제 forward와 다를 경우 보정
+        lookRot *= Quaternion.Euler(aimBoneLocalForwardFix);
+
+        aimBone.rotation = Quaternion.Slerp(aimBone.rotation, lookRot, aimBoneWeight);
+    }
+
     void FaceDirection(Vector3 dir)
     {
         dir.y = 0f;
@@ -127,27 +145,17 @@ public class EnemyAI : MonoBehaviour
 
     void DealDamage(RaycastHit hit)
     {
-        // 1순위: NeoFPS IDamageHandler 시도 (타입이 있으면 사용)
-        var handlerComponent = hit.collider.GetComponentInParent<MonoBehaviour>();
-        if (handlerComponent != null)
+        var idh = hit.collider.GetComponentInParent(
+            System.Type.GetType("NeoFPS.IDamageHandler, NeoFPS") ?? typeof(MonoBehaviour));
+        if (idh != null && idh.GetType().GetMethod("AddDamage", new[] { typeof(float) }) != null)
         {
-            var idh = hit.collider.GetComponentInParent(
-                System.Type.GetType("NeoFPS.IDamageHandler, NeoFPS")
-                ?? typeof(MonoBehaviour));
-            if (idh != null && idh.GetType().GetMethod("AddDamage",
-                new[] { typeof(float) }) != null)
-            {
-                idh.GetType().GetMethod("AddDamage", new[] { typeof(float) })
-                   .Invoke(idh, new object[] { damage });
-                return;
-            }
+            idh.GetType().GetMethod("AddDamage", new[] { typeof(float) })
+               .Invoke(idh, new object[] { damage });
+            return;
         }
-
-        // 2순위: 일반 TakeDamage(float) 메서드를 가진 스크립트 호출
         hit.collider.SendMessageUpwards("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
     }
 
-    // 외부에서 적을 피격시킬 때 호출
     public void TakeDamage(float amount)
     {
         if (state == State.Dead) return;
@@ -164,7 +172,6 @@ public class EnemyAI : MonoBehaviour
         if (agent != null) { agent.isStopped = true; agent.enabled = false; }
     }
 
-    // Scene 뷰에서 범위 시각화
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
