@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Project Path="NeoFPS.csproj" />
+  <Project Path="NeoSaveGames.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="NeoFPS.InputSystem.csproj" />
+  <Project Path="NeoSaveGames.Editor.csproj" />
+  <Project Path="NeoFPS.Managers.csproj" />
+</Solution>
