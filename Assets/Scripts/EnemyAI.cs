@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using NeoFPS;  // ← 추가
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Animator))]
@@ -40,6 +41,10 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] LayerMask shootLayerMask = ~0;
     [SerializeField] float aimHeightOffset = 1.0f;
 
+    [Header("Target Acquisition")]
+    [Tooltip("플레이어 재탐색 주기 (초). 스폰 시스템 사용 중이라면 0.5초가 무난")]
+    [SerializeField] float retargetInterval = 0.5f;
+
     // --- internal ---
     NavMeshAgent agent;
     Animator anim;
@@ -47,6 +52,7 @@ public class EnemyAI : MonoBehaviour
     State state = State.Idle;
     float hp;
     float lastFireTime;
+    float lastRetargetTime;
 
     static readonly int HashSpeed = Animator.StringToHash("Speed");
     static readonly int HashIsShooting = Animator.StringToHash("IsShooting");
@@ -61,16 +67,27 @@ public class EnemyAI : MonoBehaviour
         hp = maxHp;
     }
 
-    void Start()
+    // Start의 1회 검색 제거. Update에서 폴링으로 대체.
+    void TryAcquireTarget()
     {
+        if (target != null) return;
+        if (Time.time < lastRetargetTime + retargetInterval) return;
+
+        lastRetargetTime = Time.time;
         var playerGo = GameObject.FindGameObjectWithTag("Player");
         if (playerGo != null) target = playerGo.transform;
-        else Debug.LogWarning("[EnemyAI] Player 태그를 가진 오브젝트를 찾지 못했습니다.");
     }
 
     void Update()
     {
-        if (state == State.Dead || target == null) return;
+        if (state == State.Dead) return;
+
+        // 플레이어가 아직 없으면 주기적 재탐색
+        if (target == null)
+        {
+            TryAcquireTarget();
+            return;
+        }
 
         float dist = Vector3.Distance(transform.position, target.position);
 
@@ -127,19 +144,18 @@ public class EnemyAI : MonoBehaviour
 
     // IK 처리 — Animator Controller의 Layer에 'IK Pass' 체크 필수
     void OnAnimatorIK(int layerIndex)
-{
-    if (anim == null) return;
-    if (state == State.Dead) return;
-    if (leftHandGrip == null) return;
+    {
+        if (anim == null) return;
+        if (state == State.Dead) return;
+        if (leftHandGrip == null) return;
 
-    float weight = (state == State.Attack) ? leftHandIKWeight : 0f;
+        float weight = (state == State.Attack) ? leftHandIKWeight : 0f;
 
-    // 왼손을 그립 위치/회전으로
-    anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, weight);
-    anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, weight);
-    anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandGrip.position);
-    anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandGrip.rotation);
-}
+        anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, weight);
+        anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, weight);
+        anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandGrip.position);
+        anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandGrip.rotation);
+    }
 
     void FaceDirection(Vector3 dir)
     {
@@ -163,16 +179,18 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    // NeoFPS IDamageHandler 직접 사용. 리플렉션 제거.
+    // RaycastHit을 같이 넘겨서 헤드샷 디텍트/데미지 마커가 정상 동작.
     void DealDamage(RaycastHit hit)
     {
-        var idh = hit.collider.GetComponentInParent(
-            System.Type.GetType("NeoFPS.IDamageHandler, NeoFPS") ?? typeof(MonoBehaviour));
-        if (idh != null && idh.GetType().GetMethod("AddDamage", new[] { typeof(float) }) != null)
+        var damageHandler = hit.collider.GetComponentInParent<IDamageHandler>();
+        if (damageHandler != null)
         {
-            idh.GetType().GetMethod("AddDamage", new[] { typeof(float) })
-               .Invoke(idh, new object[] { damage });
+            damageHandler.AddDamage(damage, hit);
             return;
         }
+
+        // NeoFPS 외부 오브젝트(자체 적 등) 호환용 fallback
         hit.collider.SendMessageUpwards("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
     }
 

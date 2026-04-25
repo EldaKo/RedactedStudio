@@ -41392,7 +41392,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4063131846327470, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.52
+      value: 3.56
       objectReference: {fileID: 0}
     - target: {fileID: 4063131846327470, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_LocalPosition.z
@@ -41426,10 +41426,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114020169843680180, guid: 0486aeb450a3baf42957763257d19131, type: 3}
+      propertyPath: m_OverlapTest
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 114913173203684168, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_StartingLoadout
       value: 
       objectReference: {fileID: 11400000, guid: 16706c6c06a582b4cab7b1e704860398, type: 2}
+    - target: {fileID: 114913173203684168, guid: 0486aeb450a3baf42957763257d19131, type: 3}
+      propertyPath: m_ReplaceStartingItems
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114937191270799034, guid: 0486aeb450a3baf42957763257d19131, type: 3}
+      propertyPath: expandNestedObjectList
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
