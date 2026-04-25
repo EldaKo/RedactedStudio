@@ -111,5 +111,6 @@ AssetOrigin:
   productId: 205517
   packageName: Stylized City Ruins Pack - Post Apocalypse
   packageVersion: 1.0
-  assetPath: Assets/City Ruins - Post Apocalypse/TEXTURES/leaves_texture_03 1.png
+  assetPath: Assets/MapAsset/City Ruins - Post Apocalypse/TEXTURES/leaves_texture_03
+    1.png
   uploadId: 459415

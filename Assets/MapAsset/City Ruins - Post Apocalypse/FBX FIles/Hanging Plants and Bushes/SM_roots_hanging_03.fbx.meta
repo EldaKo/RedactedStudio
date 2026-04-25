@@ -105,5 +105,6 @@ AssetOrigin:
   productId: 205517
   packageName: Stylized City Ruins Pack - Post Apocalypse
   packageVersion: 1.0
-  assetPath: Assets/City Ruins - Post Apocalypse/FBX FIles/Hanging Plants and Bushes/SM_roots_hanging_03.fbx
+  assetPath: Assets/MapAsset/City Ruins - Post Apocalypse/FBX FIles/Hanging Plants
+    and Bushes/SM_roots_hanging_03.fbx
   uploadId: 459415
