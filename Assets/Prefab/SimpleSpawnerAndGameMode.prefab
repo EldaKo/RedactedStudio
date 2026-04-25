@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1307091013466442, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_Name
-      value: SimpleSpawnerAndGameMode Variant
+      value: SimpleSpawnerAndGameMode
       objectReference: {fileID: 0}
     - target: {fileID: 4063131846327470, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_LocalPosition.x
@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_SpawnOnStart
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114913173203684168, guid: 0486aeb450a3baf42957763257d19131, type: 3}
+      propertyPath: m_CharacterPrefab
+      value: 
+      objectReference: {fileID: 114012715847808828, guid: 0cd5f3e3e7af63a4d8511676ede5d2f3, type: 3}
     - target: {fileID: 114913173203684168, guid: 0486aeb450a3baf42957763257d19131, type: 3}
       propertyPath: m_StartingLoadout
       value: 
