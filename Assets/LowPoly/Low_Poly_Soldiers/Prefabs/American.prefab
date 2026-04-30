@@ -45,7 +45,9 @@ GameObject:
   - component: {fileID: -7141605852868142761}
   - component: {fileID: -3723143886706644141}
   - component: {fileID: 9046792186289269287}
-  m_Layer: 0
+  - component: {fileID: 7099227648610990168}
+  - component: {fileID: 2998204705206440897}
+  m_Layer: 13
   m_Name: American
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,6 +168,47 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   aimHeightOffset: 1
+  muzzleFlashPrefab: {fileID: 0}
+  muzzleFlashDuration: 0.1
+  bulletTrailPrefab: {fileID: 0}
+  bulletTrailDuration: 0.2
+  corpseLifetime: 5
+--- !u!114 &7099227648610990168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009589893580270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afb4f6b079a31f949b8a10f7e86b427e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NeoFPS::NeoFPS.BasicHealthManager
+  m_Health: 100
+  m_HealthMax: 100
+  m_CanDamageSelf: 1
+  m_OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnIsAliveChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2998204705206440897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009589893580270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba672449e0da655428ca4e3b031f6b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NeoFPS::NeoFPS.BasicDamageHandler
+  m_Multiplier: 1
+  m_Critical: 0
+  m_FireGlobalHitEvent: 1
 --- !u!1 &1012738034832206
 GameObject:
   m_ObjectHideFlags: 0

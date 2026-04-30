@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
-using NeoFPS;  
+using NeoFPS;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Animator))]
@@ -41,9 +41,19 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] LayerMask shootLayerMask = ~0;
     [SerializeField] float aimHeightOffset = 1.0f;
 
-    [Header("Target Acquisition")]
-    [Tooltip("플레이어 재탐색 주기 (초). 스폰 시스템 사용 중이라면 0.5초가 무난")]
-    [SerializeField] float retargetInterval = 0.5f;
+    [Header("Visual Effects")]
+    [Tooltip("총구 화염 프리팹 (사격 시 muzzle 위치에 생성)")]
+    [SerializeField] GameObject muzzleFlashPrefab;
+    [Tooltip("총구 화염 지속 시간 (초)")]
+    [SerializeField] float muzzleFlashDuration = 0.1f;
+    [Tooltip("탄환 트레일 프리팹 (muzzle → 타격지점)")]
+    [SerializeField] GameObject bulletTrailPrefab;
+    [Tooltip("탄환 트레일 지속 시간 (초)")]
+    [SerializeField] float bulletTrailDuration = 0.2f;
+
+    [Header("Death")]
+    [Tooltip("사망 후 시체 유지 시간 (0 이하 = 영원히, 양수 = 그 시간 후 사라짐)")]
+    [SerializeField] float corpseLifetime = -1f;
 
     // --- internal ---
     NavMeshAgent agent;
@@ -52,7 +62,7 @@ public class EnemyAI : MonoBehaviour
     State state = State.Idle;
     float hp;
     float lastFireTime;
-    float lastRetargetTime;
+    BasicHealthManager healthManager;
 
     static readonly int HashSpeed = Animator.StringToHash("Speed");
     static readonly int HashIsShooting = Animator.StringToHash("IsShooting");
@@ -65,14 +75,36 @@ public class EnemyAI : MonoBehaviour
         agent.speed = moveSpeed;
         agent.updateRotation = false;
         hp = maxHp;
+
+        // NeoFPS HealthManager 연동
+        healthManager = GetComponent<BasicHealthManager>();
+        if (healthManager != null)
+        {
+            healthManager.onIsAliveChanged += OnAliveChanged;
+        }
     }
 
-    void TryAcquireTarget()
+    void OnDestroy()
     {
-        if (target != null) return;
-        if (Time.time < lastRetargetTime + retargetInterval) return;
+        // 이벤트 구독 해제 (메모리 누수 방지)
+        if (healthManager != null)
+        {
+            healthManager.onIsAliveChanged -= OnAliveChanged;
+        }
+    }
 
-        lastRetargetTime = Time.time;
+    void OnAliveChanged(bool isAlive)
+    {
+        Debug.Log("[EnemyAI] OnAliveChanged 호출됨, isAlive=" + isAlive);  
+        // HealthManager가 사망 신호 보내면 Die() 실행
+        if (!isAlive && state != State.Dead)
+        {
+            Die();
+        }
+    }
+
+    void Start()
+    {
         var playerGo = GameObject.FindGameObjectWithTag("Player");
         if (playerGo != null) target = playerGo.transform;
     }
@@ -81,10 +113,12 @@ public class EnemyAI : MonoBehaviour
     {
         if (state == State.Dead) return;
 
+        // 플레이어를 아직 못 찾았으면 매 프레임 재시도 (NeoFPS는 런타임에 플레이어 스폰)
         if (target == null)
         {
-            TryAcquireTarget();
-            return;
+            var playerGo = GameObject.FindGameObjectWithTag("Player");
+            if (playerGo != null) target = playerGo.transform;
+            else return;
         }
 
         float dist = Vector3.Distance(transform.position, target.position);
@@ -125,6 +159,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    // Animator가 본을 계산한 뒤에 상체를 플레이어 쪽으로 보정
     void LateUpdate()
     {
         if (state != State.Attack || aimBone == null || target == null) return;
@@ -139,6 +174,7 @@ public class EnemyAI : MonoBehaviour
         aimBone.rotation = Quaternion.Slerp(aimBone.rotation, lookRot, aimBoneWeight);
     }
 
+    // IK 처리 — Animator Controller의 Layer에 'IK Pass' 체크 필수
     void OnAnimatorIK(int layerIndex)
     {
         if (anim == null) return;
@@ -146,7 +182,6 @@ public class EnemyAI : MonoBehaviour
         if (leftHandGrip == null) return;
 
         float weight = (state == State.Attack) ? leftHandIKWeight : 0f;
-
         anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, weight);
         anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, weight);
         anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandGrip.position);
@@ -168,40 +203,116 @@ public class EnemyAI : MonoBehaviour
         Vector3 aimPoint = target.position + Vector3.up * aimHeightOffset;
         Vector3 dir = (aimPoint - muzzle.position).normalized;
 
+        SpawnMuzzleFlash();
+
+        Vector3 hitPoint;
         if (Physics.Raycast(muzzle.position, dir, out RaycastHit hit, 100f, shootLayerMask))
         {
-            Debug.DrawLine(muzzle.position, hit.point, Color.red, 0.1f);
+            hitPoint = hit.point;
             DealDamage(hit);
         }
+        else
+        {
+            hitPoint = muzzle.position + dir * 100f;
+        }
+
+        SpawnBulletTrail(muzzle.position, hitPoint);
+    }
+
+    void SpawnMuzzleFlash()
+    {
+        if (muzzleFlashPrefab == null) return;
+        var flash = Instantiate(muzzleFlashPrefab, muzzle.position, muzzle.rotation, muzzle);
+        Destroy(flash, muzzleFlashDuration);
+    }
+
+    void SpawnBulletTrail(Vector3 start, Vector3 end)
+    {
+        if (bulletTrailPrefab == null) return;
+        Vector3 dir = (end - start).normalized;
+        var trail = Instantiate(bulletTrailPrefab, start, Quaternion.LookRotation(dir));
+        var lr = trail.GetComponent<LineRenderer>();
+        if (lr != null)
+        {
+            lr.positionCount = 2;
+            lr.SetPosition(0, start);
+            lr.SetPosition(1, end);
+        }
+        Destroy(trail, bulletTrailDuration);
     }
 
     void DealDamage(RaycastHit hit)
     {
-        var damageHandler = hit.collider.GetComponentInParent<IDamageHandler>();
-        if (damageHandler != null)
+        var idh = hit.collider.GetComponentInParent<IDamageHandler>();
+        if (idh != null)
         {
-            damageHandler.AddDamage(damage, hit);
+            idh.AddDamage(damage);
             return;
         }
-
+        // NeoFPS DamageHandler 없으면 일반 SendMessage 폴백
         hit.collider.SendMessageUpwards("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
     }
 
     public void TakeDamage(float amount)
     {
+        // 외부에서 직접 데미지 줄 때 사용 (디버그/특수 상황용)
+        // 일반적으로는 BasicHealthManager가 데미지 처리하고 onIsAliveChanged로 사망 알림
         if (state == State.Dead) return;
         hp -= amount;
-        if (hp <= 0f) Die();
+        if (hp <= 0f && healthManager == null)
+        {
+            // HealthManager가 없는 경우에만 직접 Die 호출
+            Die();
+        }
     }
 
     void Die()
+{
+     Debug.Log("[EnemyAI] Die() 호출됨");
+    if (state == State.Dead) return;
+
+    state = State.Dead;
+    anim.SetTrigger(HashDie);
+    anim.SetBool(HashIsShooting, false);
+    anim.SetFloat(HashSpeed, 0f);
+
+    // AI 비활성화
+    if (agent != null)
     {
-        state = State.Dead;
-        anim.SetTrigger(HashDie);
-        anim.SetBool(HashIsShooting, false);
-        anim.SetFloat(HashSpeed, 0f);
-        if (agent != null) { agent.isStopped = true; agent.enabled = false; }
+        agent.isStopped = true;
+        agent.enabled = false;
     }
+
+    // ⭐ 콜라이더를 Raycast 전에 먼저 비활성화 (자기 자신에 안 맞게)
+    var col = GetComponent<Collider>();
+    if (col != null) col.enabled = false;
+
+    // 바닥에 시체 정렬
+    SnapCorpseToGround();
+
+    if (corpseLifetime > 0f)
+    {
+        Destroy(gameObject, corpseLifetime);
+    }
+}
+
+void SnapCorpseToGround()
+{
+    Vector3 rayStart = transform.position + Vector3.up * 5f;
+    Debug.Log("[EnemyAI] SnapCorpseToGround 시작. rayStart=" + rayStart);
+    
+    if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 20f, ~0, QueryTriggerInteraction.Ignore))
+    {
+        Debug.Log("[EnemyAI] Ray 적중! 대상=" + hit.collider.name + 
+                  ", 위치=" + hit.point + 
+                  ", layer=" + LayerMask.LayerToName(hit.collider.gameObject.layer));
+        transform.position = hit.point;
+    }
+    else
+    {
+        Debug.LogWarning("[EnemyAI] 바닥을 찾지 못했습니다. rayStart: " + rayStart);
+    }
+}
 
     void OnDrawGizmosSelected()
     {
@@ -212,4 +323,6 @@ public class EnemyAI : MonoBehaviour
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, loseTargetRange);
     }
+    
+    
 }
