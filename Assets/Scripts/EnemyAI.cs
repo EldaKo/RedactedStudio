@@ -46,10 +46,14 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] GameObject muzzleFlashPrefab;
     [Tooltip("총구 화염 지속 시간 (초)")]
     [SerializeField] float muzzleFlashDuration = 0.1f;
-    [Tooltip("탄환 트레일 프리팹 (muzzle → 타격지점)")]
-    [SerializeField] GameObject bulletTrailPrefab;
-    [Tooltip("탄환 트레일 지속 시간 (초)")]
-    [SerializeField] float bulletTrailDuration = 0.2f;
+
+    [Header("Bullet (Visual Only)")]
+    [Tooltip("발사할 총알 프리팹 (DuNguyn 등)")]
+    [SerializeField] GameObject bulletPrefab;
+    [Tooltip("총알 비행 속도 (m/s)")]
+    [SerializeField] float bulletSpeed = 80f;
+    [Tooltip("총알 자동 제거 시간 (초)")]
+    [SerializeField] float bulletLifetime = 0.5f;
 
     [Header("Death")]
     [Tooltip("사망 후 시체 유지 시간 (0 이하 = 영원히, 양수 = 그 시간 후 사라짐)")]
@@ -86,7 +90,6 @@ public class EnemyAI : MonoBehaviour
 
     void OnDestroy()
     {
-        // 이벤트 구독 해제 (메모리 누수 방지)
         if (healthManager != null)
         {
             healthManager.onIsAliveChanged -= OnAliveChanged;
@@ -95,8 +98,6 @@ public class EnemyAI : MonoBehaviour
 
     void OnAliveChanged(bool isAlive)
     {
-        Debug.Log("[EnemyAI] OnAliveChanged 호출됨, isAlive=" + isAlive);  
-        // HealthManager가 사망 신호 보내면 Die() 실행
         if (!isAlive && state != State.Dead)
         {
             Die();
@@ -203,42 +204,36 @@ public class EnemyAI : MonoBehaviour
         Vector3 aimPoint = target.position + Vector3.up * aimHeightOffset;
         Vector3 dir = (aimPoint - muzzle.position).normalized;
 
+        // 시각효과 (머즐 플래시 + 총알)
         SpawnMuzzleFlash();
+        SpawnBullet(muzzle.position, dir);
 
-        Vector3 hitPoint;
+        // 데미지는 즉시 Raycast로 처리
         if (Physics.Raycast(muzzle.position, dir, out RaycastHit hit, 100f, shootLayerMask))
         {
-            hitPoint = hit.point;
             DealDamage(hit);
         }
-        else
-        {
-            hitPoint = muzzle.position + dir * 100f;
-        }
-
-        SpawnBulletTrail(muzzle.position, hitPoint);
     }
 
     void SpawnMuzzleFlash()
     {
         if (muzzleFlashPrefab == null) return;
+        // muzzle의 자식으로 생성 → 무기와 함께 움직임
         var flash = Instantiate(muzzleFlashPrefab, muzzle.position, muzzle.rotation, muzzle);
         Destroy(flash, muzzleFlashDuration);
     }
 
-    void SpawnBulletTrail(Vector3 start, Vector3 end)
+    void SpawnBullet(Vector3 startPos, Vector3 direction)
     {
-        if (bulletTrailPrefab == null) return;
-        Vector3 dir = (end - start).normalized;
-        var trail = Instantiate(bulletTrailPrefab, start, Quaternion.LookRotation(dir));
-        var lr = trail.GetComponent<LineRenderer>();
-        if (lr != null)
-        {
-            lr.positionCount = 2;
-            lr.SetPosition(0, start);
-            lr.SetPosition(1, end);
-        }
-        Destroy(trail, bulletTrailDuration);
+        if (bulletPrefab == null) return;
+
+        // 총알 생성, 발사 방향으로 회전
+        var bullet = Instantiate(bulletPrefab, startPos, Quaternion.LookRotation(direction));
+
+        // BulletMover가 직선으로 이동시킴 (Kinematic Rigidbody와 무관, 충돌 무시)
+        var mover = bullet.AddComponent<BulletMover>();
+        mover.Init(direction * bulletSpeed, bulletLifetime);
+        Destroy(bullet, bulletLifetime);
     }
 
     void DealDamage(RaycastHit hit)
@@ -261,58 +256,48 @@ public class EnemyAI : MonoBehaviour
         hp -= amount;
         if (hp <= 0f && healthManager == null)
         {
-            // HealthManager가 없는 경우에만 직접 Die 호출
             Die();
         }
     }
 
     void Die()
-{
-     Debug.Log("[EnemyAI] Die() 호출됨");
-    if (state == State.Dead) return;
-
-    state = State.Dead;
-    anim.SetTrigger(HashDie);
-    anim.SetBool(HashIsShooting, false);
-    anim.SetFloat(HashSpeed, 0f);
-
-    // AI 비활성화
-    if (agent != null)
     {
-        agent.isStopped = true;
-        agent.enabled = false;
+        if (state == State.Dead) return;
+
+        state = State.Dead;
+        anim.SetTrigger(HashDie);
+        anim.SetBool(HashIsShooting, false);
+        anim.SetFloat(HashSpeed, 0f);
+
+        // AI 비활성화
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.enabled = false;
+        }
+
+        // 콜라이더 비활성화 (시체에 계속 부딪히지 않게)
+        var col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
+        // 바닥에 시체 정렬 (NavMeshAgent 꺼지면 캐릭터가 공중에 뜨는 문제 해결)
+        SnapCorpseToGround();
+
+        // 시체 자동 제거 (옵션)
+        if (corpseLifetime > 0f)
+        {
+            Destroy(gameObject, corpseLifetime);
+        }
     }
 
-    // ⭐ 콜라이더를 Raycast 전에 먼저 비활성화 (자기 자신에 안 맞게)
-    var col = GetComponent<Collider>();
-    if (col != null) col.enabled = false;
-
-    // 바닥에 시체 정렬
-    SnapCorpseToGround();
-
-    if (corpseLifetime > 0f)
+    void SnapCorpseToGround()
     {
-        Destroy(gameObject, corpseLifetime);
+        Vector3 rayStart = transform.position + Vector3.up * 5f;
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 20f, ~0, QueryTriggerInteraction.Ignore))
+        {
+            transform.position = hit.point;
+        }
     }
-}
-
-void SnapCorpseToGround()
-{
-    Vector3 rayStart = transform.position + Vector3.up * 5f;
-    Debug.Log("[EnemyAI] SnapCorpseToGround 시작. rayStart=" + rayStart);
-    
-    if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 20f, ~0, QueryTriggerInteraction.Ignore))
-    {
-        Debug.Log("[EnemyAI] Ray 적중! 대상=" + hit.collider.name + 
-                  ", 위치=" + hit.point + 
-                  ", layer=" + LayerMask.LayerToName(hit.collider.gameObject.layer));
-        transform.position = hit.point;
-    }
-    else
-    {
-        Debug.LogWarning("[EnemyAI] 바닥을 찾지 못했습니다. rayStart: " + rayStart);
-    }
-}
 
     void OnDrawGizmosSelected()
     {
@@ -323,6 +308,4 @@ void SnapCorpseToGround()
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, loseTargetRange);
     }
-    
-    
 }

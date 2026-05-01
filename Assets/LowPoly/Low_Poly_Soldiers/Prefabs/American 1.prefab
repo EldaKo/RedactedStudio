@@ -48,7 +48,7 @@ GameObject:
   - component: {fileID: 7099227648610990168}
   - component: {fileID: 2998204705206440897}
   m_Layer: 13
-  m_Name: American
+  m_Name: American 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
