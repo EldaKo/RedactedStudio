@@ -6,7 +6,7 @@ using NeoFPS;
 [RequireComponent(typeof(Animator))]
 public class EnemyAI : MonoBehaviour
 {
-    enum State { Idle, Chase, Attack, Dead }
+    enum State { Idle, Chase, Attack, Search, Dead }
 
     [Header("References")]
     [SerializeField] Transform muzzle;
@@ -29,6 +29,22 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float detectRange = 20f;
     [SerializeField] float attackRange = 10f;
     [SerializeField] float loseTargetRange = 25f;
+
+    [Header("Vision")]
+    [Tooltip("시야각 (도). 360 = 전방위, 120 = 정면 시야")]
+    [Range(30f, 360f)][SerializeField] float viewAngle = 120f;
+    [Tooltip("시야 시작 높이 (적 발 기준, 머리 높이로 설정)")]
+    [SerializeField] float eyeHeight = 1.6f;
+    [Tooltip("시야 차단 검사할 Layer (벽/지형만 체크. CharacterControllers는 빼야 함)")]
+    [SerializeField] LayerMask sightBlockingMask = ~0;
+
+    [Header("Search Behavior")]
+    [Tooltip("시야 잃은 후 마지막 위치에서 두리번거리는 시간 (초)")]
+    [SerializeField] float searchDuration = 5f;
+    [Tooltip("두리번거릴 때 좌우 회전 속도 (도/초)")]
+    [SerializeField] float searchRotationSpeed = 60f;
+    [Tooltip("마지막 본 위치 도달 판정 거리 (m)")]
+    [SerializeField] float lastSeenReachThreshold = 1.5f;
 
     [Header("Movement")]
     [SerializeField] float moveSpeed = 3.5f;
@@ -67,6 +83,12 @@ public class EnemyAI : MonoBehaviour
     float hp;
     float lastFireTime;
     BasicHealthManager healthManager;
+
+    // 시야/Search 관련 내부 변수
+    Vector3 lastKnownPosition;
+    float searchTimer;
+    float searchRotationDir = 1f;
+    float searchRotationFlipTimer;
 
     static readonly int HashSpeed = Animator.StringToHash("Speed");
     static readonly int HashIsShooting = Animator.StringToHash("IsShooting");
@@ -123,13 +145,14 @@ public class EnemyAI : MonoBehaviour
         }
 
         float dist = Vector3.Distance(transform.position, target.position);
+        bool canSee = HasLineOfSight();
 
         switch (state)
         {
             case State.Idle:
                 anim.SetFloat(HashSpeed, 0f);
                 anim.SetBool(HashIsShooting, false);
-                if (dist < detectRange) state = State.Chase;
+                if (dist < detectRange && canSee) state = State.Chase;
                 break;
 
             case State.Chase:
@@ -138,6 +161,13 @@ public class EnemyAI : MonoBehaviour
                 anim.SetFloat(HashSpeed, agent.velocity.magnitude);
                 anim.SetBool(HashIsShooting, false);
                 FaceDirection(agent.velocity);
+
+                // 시야 잃으면 즉시 Search (마지막 본 위치 저장)
+                if (!canSee)
+                {
+                    EnterSearch();
+                    break;
+                }
 
                 if (dist < attackRange) state = State.Attack;
                 else if (dist > loseTargetRange) state = State.Idle;
@@ -149,6 +179,13 @@ public class EnemyAI : MonoBehaviour
                 anim.SetBool(HashIsShooting, true);
                 FaceDirection(target.position - transform.position);
 
+                // 시야 잃으면 즉시 사격 멈추고 Search
+                if (!canSee)
+                {
+                    EnterSearch();
+                    break;
+                }
+
                 if (Time.time >= lastFireTime + fireRate)
                 {
                     Fire();
@@ -157,7 +194,97 @@ public class EnemyAI : MonoBehaviour
 
                 if (dist > attackRange) state = State.Chase;
                 break;
+
+            case State.Search:
+                anim.SetBool(HashIsShooting, false);
+
+                // 추적 중에 시야 회복 → 즉시 다시 Chase/Attack
+                if (canSee && dist < detectRange)
+                {
+                    state = (dist < attackRange) ? State.Attack : State.Chase;
+                    break;
+                }
+
+                // 마지막 본 위치까지 이동
+                float distToLastSeen = Vector3.Distance(transform.position, lastKnownPosition);
+                if (distToLastSeen > lastSeenReachThreshold)
+                {
+                    // 이동 중
+                    agent.isStopped = false;
+                    agent.SetDestination(lastKnownPosition);
+                    anim.SetFloat(HashSpeed, agent.velocity.magnitude);
+                    FaceDirection(agent.velocity);
+                }
+                else
+                {
+                    // 도착 → 두리번거리기
+                    agent.isStopped = true;
+                    anim.SetFloat(HashSpeed, 0f);
+
+                    // 좌우 회전
+                    transform.Rotate(Vector3.up, searchRotationDir * searchRotationSpeed * Time.deltaTime);
+
+                    // 1.5초마다 회전 방향 뒤집기
+                    searchRotationFlipTimer += Time.deltaTime;
+                    if (searchRotationFlipTimer >= 1.5f)
+                    {
+                        searchRotationDir = -searchRotationDir;
+                        searchRotationFlipTimer = 0f;
+                    }
+
+                    // 타이머 진행
+                    searchTimer += Time.deltaTime;
+                    if (searchTimer >= searchDuration)
+                    {
+                        // 못 찾음 → Idle 복귀
+                        state = State.Idle;
+                    }
+                }
+                break;
         }
+    }
+
+    void EnterSearch()
+    {
+        state = State.Search;
+        lastKnownPosition = target.position;
+        searchTimer = 0f;
+        searchRotationFlipTimer = 0f;
+        searchRotationDir = 1f;
+    }
+
+    /// <summary>
+    /// 시야선 검사: 시야각 + Raycast 통합. 벽 차단 시 false 리턴.
+    /// </summary>
+    bool HasLineOfSight()
+    {
+        if (target == null) return false;
+
+        Vector3 eyePos = transform.position + Vector3.up * eyeHeight;
+        Vector3 aimPos = target.position + Vector3.up * aimHeightOffset;
+        Vector3 toTarget = aimPos - eyePos;
+
+        // 1. 시야각 검사 (수평 기준)
+        Vector3 toTargetFlat = toTarget;
+        toTargetFlat.y = 0f;
+        if (toTargetFlat.sqrMagnitude > 0.01f)
+        {
+            float angle = Vector3.Angle(transform.forward, toTargetFlat);
+            if (angle > viewAngle * 0.5f) return false;
+        }
+
+        // 2. Raycast로 벽 차단 검사
+        float distance = toTarget.magnitude;
+        if (Physics.Raycast(eyePos, toTarget.normalized, out RaycastHit hit, distance, sightBlockingMask, QueryTriggerInteraction.Ignore))
+        {
+            // 무언가에 막힘. 그게 플레이어 본인이면 통과, 다른 거면 차단
+            if (hit.collider.transform != target && !hit.collider.transform.IsChildOf(target))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Animator가 본을 계산한 뒤에 상체를 플레이어 쪽으로 보정
@@ -307,5 +434,13 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, loseTargetRange);
+
+        // 시야각 표시
+        Gizmos.color = Color.cyan;
+        Vector3 eyePosG = transform.position + Vector3.up * eyeHeight;
+        Vector3 leftDirG = Quaternion.Euler(0, -viewAngle * 0.5f, 0) * transform.forward;
+        Vector3 rightDirG = Quaternion.Euler(0, viewAngle * 0.5f, 0) * transform.forward;
+        Gizmos.DrawLine(eyePosG, eyePosG + leftDirG * detectRange);
+        Gizmos.DrawLine(eyePosG, eyePosG + rightDirG * detectRange);
     }
 }

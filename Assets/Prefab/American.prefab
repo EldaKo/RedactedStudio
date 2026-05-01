@@ -159,9 +159,17 @@ MonoBehaviour:
   detectRange: 20
   attackRange: 10
   loseTargetRange: 25
+  viewAngle: 120
+  eyeHeight: 1.6
+  sightBlockingMask:
+    serializedVersion: 2
+    m_Bits: 1
+  searchDuration: 5
+  searchRotationSpeed: 60
+  lastSeenReachThreshold: 1.5
   moveSpeed: 3.5
   turnSpeed: 8
-  fireRate: 0.4
+  fireRate: 0.7
   damage: 10
   maxHp: 100
   shootLayerMask:
