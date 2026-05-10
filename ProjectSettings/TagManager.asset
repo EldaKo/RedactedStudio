@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - AI
+  - FxTemporaire
   - Item
   layers:
   - Default
@@ -13,7 +14,7 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
+  - Bullet
   - 
   - PostProcessingVolumes
   - EnvironmentRough
