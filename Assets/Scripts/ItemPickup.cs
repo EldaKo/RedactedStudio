@@ -10,7 +10,7 @@ public class ItemPickup : MonoBehaviour
     void Update()
     {
         // 플레이어가 F키를 눌렀을 때
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             ItemInteraction();
         }
