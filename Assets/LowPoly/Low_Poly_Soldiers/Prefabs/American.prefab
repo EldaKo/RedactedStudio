@@ -45,7 +45,9 @@ GameObject:
   - component: {fileID: -7141605852868142761}
   - component: {fileID: -3723143886706644141}
   - component: {fileID: 9046792186289269287}
-  m_Layer: 0
+  - component: {fileID: 7099227648610990168}
+  - component: {fileID: 2998204705206440897}
+  m_Layer: 13
   m_Name: American
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,7 +150,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efbf345ce132b6144a129481b6a28fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
+  bulletPrefab: {fileID: 2086261179823682334, guid: 1471e98bb0946d847a15230e4b8cb13c, type: 3}
+  bulletSpeed: 80
+  bulletLifetime: 1.5
   muzzle: {fileID: 2561307073032402273}
+  aimBone: {fileID: 4156367121621676}
+  aimBoneWeight: 0.38
+  aimBoneLocalForwardFix: {x: 0, y: 90, z: 0}
+  leftHandGrip: {fileID: 8100978514643388435}
+  leftHandIKWeight: 1
   detectRange: 20
   attackRange: 10
   loseTargetRange: 25
@@ -161,6 +171,47 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   aimHeightOffset: 1
+  muzzleFlashPrefab: {fileID: 0}
+  muzzleFlashDuration: 0.1
+  bulletTrailPrefab: {fileID: 0}
+  bulletTrailDuration: 0.2
+  corpseLifetime: 5
+--- !u!114 &7099227648610990168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009589893580270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afb4f6b079a31f949b8a10f7e86b427e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NeoFPS::NeoFPS.BasicHealthManager
+  m_Health: 100
+  m_HealthMax: 100
+  m_CanDamageSelf: 1
+  m_OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnIsAliveChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2998204705206440897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009589893580270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba672449e0da655428ca4e3b031f6b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NeoFPS::NeoFPS.BasicDamageHandler
+  m_Multiplier: 1
+  m_Critical: 0
+  m_FireGlobalHitEvent: 1
 --- !u!1 &1012738034832206
 GameObject:
   m_ObjectHideFlags: 0
@@ -2353,6 +2404,37 @@ Transform:
   - {fileID: 4561248329748874}
   m_Father: {fileID: 4102096740828762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2237962366121245217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8100978514643388435}
+  m_Layer: 0
+  m_Name: LeftHandGrip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8100978514643388435
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2237962366121245217}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.006, y: 0.002, z: 0.312}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5655065405116818705}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6772498924511212576
 GameObject:
   m_ObjectHideFlags: 0
@@ -2442,6 +2524,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 400000, guid: 7beb38f0bc614ea43855626d97f5eb89, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2561307073032402273}
+    - targetCorrespondingSourceObject: {fileID: 400000, guid: 7beb38f0bc614ea43855626d97f5eb89, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8100978514643388435}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7beb38f0bc614ea43855626d97f5eb89, type: 3}
 --- !u!4 &5655065405116818705 stripped
