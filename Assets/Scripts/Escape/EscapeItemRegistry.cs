@@ -2,16 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 탈출 아이템 수집 상태를 전역으로 관리하는 정적 레지스트리.
-/// 씬 로드 시 자동으로 초기화된다.
-/// </summary>
 public static class EscapeItemRegistry
 {
     private static readonly HashSet<string> collected = new HashSet<string>();
     public static int RequiredCount { get; private set; } = 3;
 
-    /// <summary>아이템 수집 상태가 변할 때 호출. (collected, required)</summary>
     public static event Action<int, int> OnChanged;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -33,10 +28,42 @@ public static class EscapeItemRegistry
         bool added = collected.Add(id);
         if (added)
         {
+            // ==========================================
+            // [추가] 열쇠를 먹으면 은신처(ItemHideout)에도 영구 세이브!
+            // ==========================================
+            if (ItemHideout.Instance != null)
+            {
+                ItemHideout.Instance.AddKey(id);
+            }
+
             Debug.Log($"[Escape] 아이템 수집: {id} ({collected.Count}/{RequiredCount})");
             OnChanged?.Invoke(collected.Count, RequiredCount);
         }
         return added;
+    }
+
+    // ==========================================
+    // [추가] 씬이 시작될 때 은신처에서 세이브된 열쇠를 불러오는 함수
+    // ==========================================
+    public static void RestoreSavedKeys()
+    {
+        if (ItemHideout.Instance == null) return;
+
+        bool isRestored = false;
+        foreach (string savedKey in ItemHideout.Instance.collectedKeys)
+        {
+            if (collected.Add(savedKey))
+            {
+                isRestored = true;
+            }
+        }
+
+        // 불러온 열쇠가 하나라도 있다면 UI 및 기믹(이벤트) 업데이트
+        if (isRestored)
+        {
+            Debug.Log($"[Escape] 세이브된 열쇠 불러오기 완료 ({collected.Count}/{RequiredCount})");
+            OnChanged?.Invoke(collected.Count, RequiredCount);
+        }
     }
 
     public static bool HasAll() => collected.Count >= RequiredCount;

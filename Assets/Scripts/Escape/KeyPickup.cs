@@ -1,36 +1,46 @@
 using UnityEngine;
 
+// [추가] 이 스크립트를 넣으면 유니티가 알아서 Collider를 붙여줍니다.
+[RequireComponent(typeof(Collider))] 
 public class KeyPickup : MonoBehaviour
 {
     [Header("열쇠 정보")]
-    public string keyId = "blueKey";       // 열쇠 고유 ID (blueKey, greenKey, redKey)
-    public string displayName = "파란 열쇠"; // UI에 띄울 이름
+    public string keyId = "blueKey";       
+    public string displayName = "파란 열쇠"; 
 
     [Header("애니메이션 효과")]
-    public float bobAmplitude = 0.12f;     // 위아래로 움직이는 폭
-    public float bobFrequency = 1.2f;      // 움직이는 속도
-    public float rotateSpeed = 80f;        // 회전 속도
+    public float bobAmplitude = 0.12f;     
+    public float bobFrequency = 1.2f;      
+    public float rotateSpeed = 80f;        
 
     [Header("효과음")]
-    public AudioClip pickupSound;          // 획득 시 재생할 사운드
+    public AudioClip pickupSound;          
 
     private Vector3 startPos;
 
     void Start()
     {
-        // 시작 위치 기억
         startPos = transform.position;
+
+        // ==========================================
+        // [해결 1] 강제 트리거 설정 (튕김 방지)
+        // 시작하자마자 코드가 강제로 IsTrigger를 체크해버립니다.
+        // 이제 캐릭터랑 단단하게 부딪히지 않고 스르륵 먹어집니다!
+        // ==========================================
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
     }
 
     void Update()
     {
-        // 열쇠가 둥둥 떠다니며 회전하는 멋진 효과
         transform.Rotate(Vector3.up * rotateSpeed * Time.deltaTime, Space.World);
         float newY = startPos.y + Mathf.Sin(Time.time * Mathf.PI * 2f * bobFrequency) * bobAmplitude;
         transform.position = new Vector3(transform.position.x, newY, transform.position.z);
     }
 
-    // 플레이어가 열쇠에 몸을 부딪혔을 때 (Collider의 IsTrigger가 체크되어 있어야 함)
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -39,26 +49,24 @@ public class KeyPickup : MonoBehaviour
         }
     }
 
-    // ※ 만약 NeoFPS의 상호작용(F키 줍기)을 사용 중이라면 이 함수를 그 이벤트에 연결하세요.
     public void CollectKey()
     {
-        if (ItemHideout.Instance != null)
+        // ==========================================
+        // [해결 2] 레지스트리에 수집 알림 (문 열림 버그 수정)
+        // ItemHideout에 직접 넣지 말고, EscapeItemRegistry를 통해 수집합니다.
+        // 보내주신 Registry 코드를 보니, 이렇게 하면 알아서 은신처에도 저장되고 
+        // 탈출구 HUD 숫자도 정상적으로 올라갑니다!
+        // ==========================================
+        bool isCollected = EscapeItemRegistry.Collect(keyId);
+
+        // 정상적으로 수집이 처리되었다면 사운드 재생 후 파괴
+        if (isCollected)
         {
-            // 1. 매니저에 열쇠 저장! (씬이 넘어가도 유지됨)
-            ItemHideout.Instance.AddKey(keyId);
-            
-            // 2. 사운드 재생
             if (pickupSound != null)
             {
                 AudioSource.PlayClipAtPoint(pickupSound, transform.position);
             }
-
-            // 3. 필드에서 열쇠 삭제
             Destroy(gameObject);
-        }
-        else
-        {
-            Debug.LogWarning("씬에 ItemHideout 매니저가 없어서 열쇠를 저장할 수 없습니다!");
         }
     }
 }

@@ -134,5 +134,14 @@ namespace NeoFPS
                 return DamageResult.Blocked;
         }
         #endregion
+
+        // ==========================================
+        // [새로 추가된 부분] 외부 스크립트에서 방탄복 레벨을 설정하는 함수
+        // ==========================================
+        public void SetArmourLevel(int newLevel)
+        {
+            m_ArmourLevel = newLevel;
+            // 필요하다면 여기에 레벨업 이펙트나 사운드 코드를 추가할 수도 있습니다.
+        }
     }
 }

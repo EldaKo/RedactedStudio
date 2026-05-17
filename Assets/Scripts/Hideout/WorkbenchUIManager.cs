@@ -8,6 +8,7 @@ using NeoFPS.ModularFirearms;
 
 public class WorkbenchUIManager : MonoBehaviour
 {
+    [Header("플레이어 프리팹 (필수 연결)")]
     public GameObject playerPrefab; 
 
     [Header("방어구 업그레이드 (파란 열쇠 소모)")]
@@ -21,6 +22,7 @@ public class WorkbenchUIManager : MonoBehaviour
     public TextMeshProUGUI weaponCostText;
     public Button weaponUpgradeBtn;
 
+    [Header("기타 UI")]
     public Button closeButton;
     private List<ModularFirearm> availableWeapons = new List<ModularFirearm>();
 
@@ -34,6 +36,18 @@ public class WorkbenchUIManager : MonoBehaviour
 
     private void OnEnable()
     {
+        // ========================================================
+        // [안전장치] 첫 게임 시작 시 강제 활성화 방지
+        // 유니티가 시작되는 첫 프레임(FrameCount 2 이하)에 다른 매니저에 의해 
+        // 억지로 켜진다면, 화면에 보이기 전에 즉시 꺼버립니다.
+        // ========================================================
+        if (Time.frameCount <= 2)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        // 정상적으로 게임 플레이 중에 버튼을 눌러서 열었을 때만 아래 기능이 실행됩니다.
         LoadWeaponsFromPrefab(); 
         Invoke("UpdateUI", 0.1f); 
     }
@@ -91,7 +105,61 @@ public class WorkbenchUIManager : MonoBehaviour
         }
     }
 
-    // (LoadWeaponsFromPrefab 및 CloseWorkbenchUI 로직은 기존과 동일)
-    private void LoadWeaponsFromPrefab() { /* 기존 코드 유지 */ }
-    private void CloseWorkbenchUI() { gameObject.SetActive(false); }
+    // NeoFPS 플레이어 프리팹에서 무기 목록을 추출하는 로직
+    private void LoadWeaponsFromPrefab() 
+    { 
+        if (weaponDropdown == null || playerPrefab == null) return;
+
+        availableWeapons.Clear();
+        weaponDropdown.ClearOptions();
+        List<string> options = new List<string>();
+
+        var inventory = playerPrefab.GetComponent("FpsInventorySwappable");
+        if (inventory != null)
+        {
+            FieldInfo field = inventory.GetType().GetField("m_StartingItems", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (field != null)
+            {
+                System.Array items = field.GetValue(inventory) as System.Array;
+                if (items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        if (item == null) continue;
+                        var firearm = (item as Component).GetComponent<ModularFirearm>();
+                        if (firearm != null)
+                        {
+                            availableWeapons.Add(firearm);
+                            options.Add(firearm.name.Replace("(Clone)", "").Trim());
+                        }
+                    }
+                }
+            }
+        }
+        weaponDropdown.AddOptions(options);
+    }
+
+    // ========================================================
+    // [수정] 닫기 버튼을 누를 때 카메라 줌아웃 연동
+    // ========================================================
+    private void CloseWorkbenchUI() 
+    { 
+        // 1. 작업대 UI 화면을 비활성화합니다.
+        gameObject.SetActive(false); 
+
+        // 2. 만약 작업대를 닫으면서 이전의 시설 선택 UI(HideoutUIPanel)를 다시 켜고 싶다면 
+        //    아래 코드의 주석(//)을 해제하여 사용하세요.
+        // if (HideoutUIManager.Instance != null && HideoutUIManager.Instance.uiPanel != null)
+        //     HideoutUIManager.Instance.uiPanel.SetActive(true);
+
+        // 3. 은신처 카메라를 다시 기본 전체보기(탑뷰) 위치로 부드럽게 되돌립니다.
+        if (HideoutCamera.Instance != null)
+        {
+            HideoutCamera.Instance.ReturnToTopView();
+        }
+        else
+        {
+            Debug.LogWarning("HideoutCamera.Instance를 찾을 수 없어서 줌아웃을 실행할 수 없습니다.");
+        }
+    }
 }
