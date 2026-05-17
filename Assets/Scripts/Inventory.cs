@@ -37,8 +37,38 @@ public class Inventory : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
 
         slots = new ItemStack[slotCount];
+    }
+
+    public int GetTotalCount(ItemData item)
+    {
+        if (item == null || slots == null) return 0;
+        int total = 0;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null && slots[i].data == item) total += slots[i].count;
+        }
+        return total;
+    }
+
+    public bool TryConsume(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || slots == null) return false;
+        if (GetTotalCount(item) < amount) return false;
+
+        int remaining = amount;
+        for (int i = 0; i < slots.Length && remaining > 0; i++)
+        {
+            if (slots[i] == null || slots[i].data != item) continue;
+            int take = Mathf.Min(slots[i].count, remaining);
+            slots[i].count -= take;
+            remaining -= take;
+            if (slots[i].count <= 0) slots[i] = null;
+        }
+        OnInventoryChanged?.Invoke();
+        return true;
     }
 
     private void OnDestroy()

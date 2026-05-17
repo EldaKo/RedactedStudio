@@ -51,12 +51,11 @@ public class KeySpawner : MonoBehaviour
         {
             if (prefab == null) { Debug.LogWarning("[KeySpawner] 프리팹 없음"); continue; }
 
-            Vector3 pos = FindPoint(placed);
+            Vector3 pos = FindPoint(placed, minDistBetweenKeys);
             if (pos == Vector3.zero)
-            {
-                // NavMesh 실패 시 Raycast fallback
-                pos = FallbackPoint(placed);
-            }
+                pos = FallbackPoint(placed, minDistBetweenKeys);
+            if (pos == Vector3.zero)
+                pos = FallbackPoint(placed, minDistBetweenKeys * 0.5f);
 
             if (pos == Vector3.zero) { Debug.LogWarning($"[KeySpawner] {prefab.name} 배치 실패"); continue; }
 
@@ -67,7 +66,7 @@ public class KeySpawner : MonoBehaviour
         }
     }
 
-    Vector3 FindPoint(List<Vector3> placed)
+    Vector3 FindPoint(List<Vector3> placed, float minDistBetween)
     {
         for (int i = 0; i < maxAttempts; i++)
         {
@@ -77,21 +76,19 @@ public class KeySpawner : MonoBehaviour
             if (!NavMesh.SamplePosition(new Vector3(rx, 50f, rz), out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
                 continue;
 
-            // 지면 y가 너무 높으면 나무 위, 지붕 등으로 간주해서 제외
             if (hit.position.y > maxGroundY) continue;
 
             Vector3 pos = hit.position + Vector3.up * heightOffset;
 
-            // 머리 위 playerEyeHeight 만큼 막힌 게 없어야 실제로 설 수 있는 곳
-            if (Physics.Raycast(pos, Vector3.up, playerEyeHeight, obstacleMask)) continue;
+            if (Physics.Raycast(pos, Vector3.up, playerEyeHeight, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
 
-            if (!Valid(pos, placed)) continue;
+            if (!Valid(pos, placed, minDistBetween)) continue;
             return pos;
         }
         return Vector3.zero;
     }
 
-    Vector3 FallbackPoint(List<Vector3> placed)
+    Vector3 FallbackPoint(List<Vector3> placed, float minDistBetween)
     {
         for (int i = 0; i < maxAttempts; i++)
         {
@@ -99,27 +96,25 @@ public class KeySpawner : MonoBehaviour
             float rz = Random.Range(areaMinZ, areaMaxZ);
             Ray ray = new Ray(new Vector3(rx, 100f, rz), Vector3.down);
 
-            if (!Physics.Raycast(ray, out RaycastHit hit, 200f)) continue;
+            if (!Physics.Raycast(ray, out RaycastHit hit, 200f, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
 
-            // 지면 y 높이 제한
             if (hit.point.y > maxGroundY) continue;
 
             Vector3 pos = hit.point + Vector3.up * heightOffset;
 
-            // 머리 위 openness 체크
-            if (Physics.Raycast(pos, Vector3.up, playerEyeHeight, obstacleMask)) continue;
+            if (Physics.Raycast(pos, Vector3.up, playerEyeHeight, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
 
-            if (!Valid(pos, placed)) continue;
+            if (!Valid(pos, placed, minDistBetween)) continue;
             return pos;
         }
         return Vector3.zero;
     }
 
-    bool Valid(Vector3 pos, List<Vector3> placed)
+    bool Valid(Vector3 pos, List<Vector3> placed, float minDistBetween)
     {
         if (Vector3.Distance(pos, SpawnPos) < minDistFromSpawn) return false;
         foreach (var p in placed)
-            if (Vector3.Distance(pos, p) < minDistBetweenKeys) return false;
+            if (Vector3.Distance(pos, p) < minDistBetween) return false;
         return true;
     }
 }
