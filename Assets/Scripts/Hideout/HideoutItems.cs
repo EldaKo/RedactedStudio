@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class ItemHideout : MonoBehaviour
 {
     public static ItemHideout Instance;
-    public int upgradeMaterial = 0; 
     public List<string> collectedKeys = new List<string>();
 
     void Awake()
