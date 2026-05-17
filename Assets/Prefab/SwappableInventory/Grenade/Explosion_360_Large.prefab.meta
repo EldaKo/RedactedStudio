@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 150179
   packageName: 'NeoFPS: FPS Controller, Template & Toolkit'
   packageVersion: 1.1.36
-  assetPath: Assets/NeoFPS/Samples/Shared/Prefabs/Explosions/Explosion_360_Large.prefab
+  assetPath: Assets/Prefab/SwappableInventory/Grenade/Explosion_360_Large.prefab
   uploadId: 899482

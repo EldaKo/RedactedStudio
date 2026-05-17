@@ -5,8 +5,6 @@ TagManager:
   serializedVersion: 3
   tags:
   - AI
-  - FxTemporaire
-  - Item
   layers:
   - Default
   - TransparentFX
