@@ -17,15 +17,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/mainScreen.unity
     guid: e89d581d69822bd45a339acf01dfd8d6
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/CityMapScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/TutorialScene.unity
     guid: f6ded72635e924d43949d8b38a88e2a8
   - enabled: 1
     path: Assets/Scenes/Hideout.unity
     guid: 7acd45e7f0f5c4f49b661a61b4582e91
+  - enabled: 1
+    path: Assets/Scenes/DEMO City Ruins.unity
+    guid: e6f7d41c4018b224e9c16773e320e43a
   - enabled: 0
     path: Assets/NeoFPS/Samples/SinglePlayer/Scenes/FeatureDemos/CameraShake/FeatureDemo_CameraShake.unity
     guid: fa08063a1e694af48b5f48d3bfefcbdf

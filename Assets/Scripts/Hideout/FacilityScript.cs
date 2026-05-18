@@ -71,6 +71,8 @@ public class FacilityScript : MonoBehaviour
 
     void Awake()
     {
+        currentLevel = FacilityLevelTracker.GetLevel(facilityName, currentLevel);
+
         if (panelRoot != null) panelRoot.SetActive(false);
         if (upgradeButton != null) upgradeButton.onClick.AddListener(OnUpgradeClicked);
         if (useButton != null) useButton.onClick.AddListener(OnUseClicked);
@@ -171,6 +173,7 @@ public class FacilityScript : MonoBehaviour
     public void LevelUp()
     {
         currentLevel++;
+        FacilityLevelTracker.SetLevel(facilityName, currentLevel);
         Debug.Log($"{facilityName}의 시설 레벨이 {currentLevel}로 상승했습니다!");
 
         if (PlayerUpgradeManager.Instance != null)

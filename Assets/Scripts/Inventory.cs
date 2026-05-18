@@ -82,6 +82,20 @@ public class Inventory : MonoBehaviour
         return slots[index];
     }
 
+    public void ClearAll()
+    {
+        if (slots == null) return;
+        for (int i = 0; i < slots.Length; i++) slots[i] = null;
+        OnInventoryChanged?.Invoke();
+    }
+
+    public void SetSlot(int index, ItemData data, int count)
+    {
+        if (slots == null || index < 0 || index >= slots.Length || data == null || count <= 0) return;
+        slots[index] = new ItemStack { data = data, count = count };
+        OnInventoryChanged?.Invoke();
+    }
+
     public bool TryAdd(ItemData item, int amount = 1)
     {
         if (item == null || amount <= 0 || slots == null) return false;
