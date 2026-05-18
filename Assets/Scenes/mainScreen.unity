@@ -256,9 +256,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab6a4bd2df1a98f45937caf960527fab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuManager
-  StartBtn: {fileID: 1910017482}
-  QuitBtn: {fileID: 776959353}
-  TutorialBtn: {fileID: 176681227}
+  continueBtn: {fileID: 1910017482}
+  newGameBtn: {fileID: 176681227}
+  tutorialBtn: {fileID: 0}
+  quitBtn: {fileID: 776959353}
 --- !u!4 &97881809
 Transform:
   m_ObjectHideFlags: 0
@@ -576,7 +577,7 @@ GameObject:
   - component: {fileID: 176681228}
   - component: {fileID: 176681227}
   m_Layer: 5
-  m_Name: TutorialBtn
+  m_Name: StartBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1127,7 +1128,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: START
+  m_text: 'Continue
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1669,7 +1672,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: TUTORIAL
+  m_text: New Game
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1974,7 +1977,7 @@ GameObject:
   - component: {fileID: 1910017483}
   - component: {fileID: 1910017482}
   m_Layer: 5
-  m_Name: StartBtn
+  m_Name: LoadBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

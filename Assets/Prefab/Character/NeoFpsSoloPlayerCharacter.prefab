@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 2020582525537265628}
   - component: {fileID: 479637773597232489}
   - component: {fileID: 5152300500798763294}
+  - component: {fileID: 4566158888345744832}
   m_Layer: 13
   m_Name: NeoFpsSoloPlayerCharacter
   m_TagString: Player
@@ -484,6 +485,20 @@ MonoBehaviour:
   m_DuplicateBehaviour: 0
   m_SwapAction: 0
   m_GroupSizes: 010000000100000001000000
+--- !u!114 &4566158888345744832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000010381446024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d3b9be25b05ec44888a1bb11603df91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NeoFPSUpgradeApplier
+  armorDurabilityByLevel: 000000000a000000140000001e000000
+  autoEquipArmorAtStart: 1
 --- !u!1 &1000011745390456
 GameObject:
   m_ObjectHideFlags: 0
@@ -1287,7 +1302,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   interactRange: 3
+  aimTolerance: 0.18
   mainCamera: {fileID: 20978101300941664}
+  inventoryUI: {fileID: 0}
 --- !u!1 &1000014026923868
 GameObject:
   m_ObjectHideFlags: 0

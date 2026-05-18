@@ -42,4 +42,10 @@ public static class EscapeItemRegistry
     public static bool HasAll() => collected.Count >= RequiredCount;
     public static int CollectedCount => collected.Count;
     public static bool Has(string id) => collected.Contains(id);
+
+    public static void Reset()
+    {
+        collected.Clear();
+        OnChanged?.Invoke(0, RequiredCount);
+    }
 }

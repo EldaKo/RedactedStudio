@@ -15204,6 +15204,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Apple
       objectReference: {fileID: 0}
+    - target: {fileID: 3517166268613746596, guid: f3bf129230ea2d24596c0250b0b56e18, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 1614314089}
     m_RemovedComponents:
     - {fileID: 7155975384099548829, guid: f3bf129230ea2d24596c0250b0b56e18, type: 3}
     m_RemovedGameObjects: []
@@ -35132,6 +35136,19 @@ AudioSource:
   m_CorrespondingSourceObject: {fileID: 2987966948080540656, guid: ae94e98fddb6b384bb1008d24e891c79, type: 3}
   m_PrefabInstance: {fileID: 250336072}
   m_PrefabAsset: {fileID: 0}
+--- !u!134 &1614314089
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1001 &1616116265
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -39203,6 +39220,19 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!134 &1809178214
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1001 &1816643323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40662,8 +40692,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6375767742602498750, guid: a60fa7ddb0ee3a143a20a0ae97cee53b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1913558173}
   m_SourcePrefab: {fileID: 100100000, guid: a60fa7ddb0ee3a143a20a0ae97cee53b, type: 3}
+--- !u!1 &1913558172 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6375767742602498750, guid: a60fa7ddb0ee3a143a20a0ae97cee53b, type: 3}
+  m_PrefabInstance: {fileID: 1913558171}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1913558173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913558172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 175d94e4554d24a44b4e4ce2719b3079, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RaidDeathHandler
+  hideoutSceneName: Hideout
+  deathDelay: 2
 --- !u!1001 &1919690886
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -44826,6 +44878,19 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6976110609686074041, guid: e251f8003fa273b4e97635ab9ab19a3c, type: 3}
   m_PrefabInstance: {fileID: 2126773072}
   m_PrefabAsset: {fileID: 0}
+--- !u!134 &2132679794
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1001 &2135745560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -45431,17 +45496,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 831147576857852390, guid: f059f506d8c26d14a9f700b6522b0b03, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 1809178214}
     - target: {fileID: 5766194097682174219, guid: f059f506d8c26d14a9f700b6522b0b03, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -46.33516
+      value: -46.6
       objectReference: {fileID: 0}
     - target: {fileID: 5766194097682174219, guid: f059f506d8c26d14a9f700b6522b0b03, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.26163
+      value: 2.26
       objectReference: {fileID: 0}
     - target: {fileID: 5766194097682174219, guid: f059f506d8c26d14a9f700b6522b0b03, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.14669
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 5766194097682174219, guid: f059f506d8c26d14a9f700b6522b0b03, type: 3}
       propertyPath: m_LocalRotation.w
@@ -46515,21 +46584,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1055192451665223804, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2132679794}
     - target: {fileID: 2387031305938062736, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
       propertyPath: m_Name
       value: tape
       objectReference: {fileID: 0}
     - target: {fileID: 8567276701991268232, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -46.33516
+      value: -46
       objectReference: {fileID: 0}
     - target: {fileID: 8567276701991268232, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.26163
+      value: 2.335
       objectReference: {fileID: 0}
     - target: {fileID: 8567276701991268232, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.14669
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 8567276701991268232, guid: 3a9d722196b9a3c41b6cefd6ac80f859, type: 3}
       propertyPath: m_LocalRotation.w

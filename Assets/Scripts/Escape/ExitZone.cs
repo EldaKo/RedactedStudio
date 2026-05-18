@@ -104,6 +104,7 @@ public class ExitZone : MonoBehaviour
         Time.timeScale = 0f;
         yield return new WaitForSecondsRealtime(clearScreenDuration);
         Time.timeScale = 1f;
+        SaveManager.SaveOnHideoutLoad = true;
         SceneManager.LoadScene(nextSceneName);
     }
 

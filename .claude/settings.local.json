@@ -14,7 +14,11 @@
       "mcp__UnityMCP__execute_menu_item",
       "mcp__UnityMCP__delete_script",
       "Bash(grep -v \"\\\\.meta$\")",
-      "Bash(grep -v \"/$\")"
+      "Bash(grep -v \"/$\")",
+      "mcp__UnityMCP__batch_execute",
+      "mcp__UnityMCP__validate_script",
+      "mcp__UnityMCP__manage_asset",
+      "mcp__UnityMCP__manage_editor"
     ]
   }
 }
