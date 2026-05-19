@@ -38,14 +38,52 @@ public class HideoutUIManager : MonoBehaviour
     {
         if (SaveManager.PendingLoad != null)
         {
+            // Continue / Death: 저장된 상태 복원, 현재 인벤토리는 폐기
             ApplySaveData(SaveManager.PendingLoad);
             SaveManager.PendingLoad = null;
         }
         else if (SaveManager.SaveOnHideoutLoad)
         {
+            // Raid 탈출 성공: 저장된 stash + 현재 raid loot 합쳐서 저장
+            MergeRaidLootIntoSavedStash();
             SaveManager.Save(SaveManager.CaptureCurrentState());
         }
         SaveManager.SaveOnHideoutLoad = false;
+    }
+
+    private void MergeRaidLootIntoSavedStash()
+    {
+        // 1. 현재 인벤토리(=raid loot)를 스냅샷
+        var raidLoot = new System.Collections.Generic.List<InventorySlotSave>();
+        if (Inventory.HasInstance)
+        {
+            for (int i = 0; i < Inventory.Instance.SlotCount; i++)
+            {
+                var slot = Inventory.Instance.GetSlot(i);
+                if (slot == null || slot.data == null || slot.count <= 0) continue;
+                raidLoot.Add(new InventorySlotSave
+                {
+                    slotIndex = i,
+                    itemDataName = slot.data.itemName,
+                    count = slot.count
+                });
+            }
+        }
+
+        // 2. 레이드 직전 stash를 save 파일에서 복원 (ApplySaveData가 인벤토리 클리어 후 복원)
+        var preRaidSave = SaveManager.Load();
+        if (preRaidSave != null) ApplySaveData(preRaidSave);
+
+        // 3. raid loot을 TryAdd로 stash 위에 추가 (stack/empty slot 자동 처리)
+        if (Inventory.HasInstance)
+        {
+            var registry = ItemDataRegistry.Get();
+            foreach (var entry in raidLoot)
+            {
+                var data = registry != null ? registry.FindByName(entry.itemDataName) : null;
+                if (data != null) Inventory.Instance.TryAdd(data, entry.count);
+            }
+        }
     }
 
     private void ApplySaveData(GameSaveData data)
