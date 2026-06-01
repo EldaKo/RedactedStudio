@@ -69,6 +69,7 @@ public class HideoutUIManager : MonoBehaviour
             // Continue / Death: 저장된 상태 복원, 현재 인벤토리는 폐기
             ApplySaveData(SaveManager.PendingLoad);
             StageProgress.SetAll(SaveManager.PendingLoad.clearedStages);
+            PlayerLoadout.SetAll(SaveManager.PendingLoad.unlockedWeapons, SaveManager.PendingLoad.equippedWeapon);
             SaveManager.PendingLoad = null;
         }
         else if (SaveManager.SaveOnHideoutLoad)
@@ -225,7 +226,20 @@ public class HideoutUIManager : MonoBehaviour
         {
             if (f != facility) f.Close();
         }
+        foreach (var wb in FindObjectsOfType<WeaponBench>(true))
+            wb.ClosePanel();
         facility.Open();
+        if (stageSelectPanel != null) stageSelectPanel.SetActive(false);
+        SetHubButtonsVisible(false);
+    }
+
+    public void OpenWeaponBench(WeaponBench bench)
+    {
+        foreach (var f in FindObjectsOfType<FacilityScript>(true))
+            f.Close();
+        foreach (var wb in FindObjectsOfType<WeaponBench>(true))
+            if (wb != bench) wb.ClosePanel();
+        bench.OpenPanel();
         if (stageSelectPanel != null) stageSelectPanel.SetActive(false);
         SetHubButtonsVisible(false);
     }
@@ -234,6 +248,8 @@ public class HideoutUIManager : MonoBehaviour
     {
         foreach (var f in FindObjectsOfType<FacilityScript>(true))
             f.Close();
+        foreach (var wb in FindObjectsOfType<WeaponBench>(true))
+            wb.ClosePanel();
 
         if (HideoutCamera.Instance != null) HideoutCamera.Instance.ReturnToTopView();
         SetHubButtonsVisible(true);

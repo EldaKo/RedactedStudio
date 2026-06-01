@@ -527,6 +527,9 @@ public class EnemyAI : MonoBehaviour
         // 재료 드랍
         TryDropLoot();
 
+        // 탄약 드랍 (플레이어가 장착한 무기 탄종에 맞춰)
+        TryDropAmmo();
+
         // 시체 자동 제거 (옵션)
         if (corpseLifetime > 0f)
         {
@@ -544,6 +547,20 @@ public class EnemyAI : MonoBehaviour
 
         Vector3 pos = transform.position + Vector3.up * dropHeightOffset;
         Instantiate(prefab, pos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+    }
+
+    void TryDropAmmo()
+    {
+        if (Random.value > dropChance) return;
+
+        var db = WeaponData.Get();
+        if (db == null) return;
+        var weapon = db.FindById(PlayerLoadout.EquippedWeapon);
+        if (weapon == null || weapon.ammoPickupPrefab == null) return;
+
+        Vector3 pos = transform.position + Vector3.up * dropHeightOffset
+                      + new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
+        Instantiate(weapon.ammoPickupPrefab, pos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
     }
 
     void SnapCorpseToGround()

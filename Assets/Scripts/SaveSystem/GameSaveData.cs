@@ -10,6 +10,8 @@ public class GameSaveData
     public List<FacilitySave> facilities = new List<FacilitySave>();
     public List<InventorySlotSave> inventorySlots = new List<InventorySlotSave>();
     public List<string> clearedStages = new List<string>();
+    public List<string> unlockedWeapons = new List<string>();
+    public string equippedWeapon = "";
 }
 
 [Serializable]

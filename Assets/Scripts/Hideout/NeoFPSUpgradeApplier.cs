@@ -24,7 +24,42 @@ public class NeoFPSUpgradeApplier : MonoBehaviour
         if (PlayerUpgradeManager.Instance == null) yield break;
 
         EquipArmorByLevel();
+        EquipSelectedWeapon();
         ApplyWeaponUpgrade();
+    }
+
+    private void EquipSelectedWeapon()
+    {
+        var db = WeaponData.Get();
+        if (db == null) return;
+
+        var weapon = db.FindById(PlayerLoadout.EquippedWeapon);
+        if (weapon == null || weapon.weaponPrefab == null) return;
+
+        ICharacter character = GetComponent<ICharacter>() ?? GetComponentInParent<ICharacter>();
+        if (character == null)
+        {
+            foreach (var c in FindObjectsOfType<MonoBehaviour>())
+                if (c is ICharacter ic) { character = ic; break; }
+        }
+
+        IInventory inventory = character != null ? character.inventory : GetComponentInParent<IInventory>();
+        if (inventory == null) { Debug.LogWarning("[NeoFPS] EquipWeapon: 인벤토리 없음"); return; }
+
+        // 기본 장착 무기(리볼버 등)가 드랍되지 않도록, 기존 화기를 먼저 제거
+        var existing = inventory.GetItems();
+        if (existing != null)
+        {
+            var toRemove = new System.Collections.Generic.List<IInventoryItem>();
+            foreach (var it in existing)
+                if (it != null && it.GetComponent<ModularFirearm>() != null)
+                    toRemove.Add(it);
+            foreach (var it in toRemove)
+                inventory.RemoveItem(it);
+        }
+
+        inventory.AddItemFromPrefab(weapon.weaponPrefab);
+        Debug.Log($"[NeoFPS] 무기 지급: {weapon.displayName}");
     }
 
     private void EquipArmorByLevel()
