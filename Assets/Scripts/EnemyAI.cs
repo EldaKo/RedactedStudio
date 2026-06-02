@@ -37,6 +37,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float eyeHeight = 1.6f;
     [Tooltip("시야 차단 검사할 Layer (벽/지형만 체크. CharacterControllers는 빼야 함)")]
     [SerializeField] LayerMask sightBlockingMask = ~0;
+    [Tooltip("이 거리 안에서는 시야각과 무관하게 '인기척'으로 감지 (등 뒤·옆도 감지). 벽으로 막히면 감지 안 됨")]
+    [SerializeField] float proximityRange = 6f;
 
     [Header("Search Behavior")]
     [Tooltip("시야 잃은 후 마지막 위치에서 두리번거리는 시간 (초)")]
@@ -242,7 +244,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         float dist = Vector3.Distance(transform.position, target.position);
-        bool canSee = HasLineOfSight();
+        bool canSee = CanDetectTarget(dist);
 
         switch (state)
         {
@@ -352,18 +354,27 @@ public class EnemyAI : MonoBehaviour
     }
 
     /// <summary>
-    /// 시야선 검사: 시야각 + Raycast 통합. 벽 차단 시 false 리턴.
+    /// 종합 감지 검사. 다음을 모두 만족하면 true:
+    ///  - detectRange 안
+    ///  - 벽에 막히지 않음
+    ///  - (시야각 안) 또는 (proximityRange 안 = 인기척으로 등 뒤도 감지)
     /// </summary>
-    bool HasLineOfSight()
+    bool CanDetectTarget(float dist)
     {
         if (target == null) return false;
+        if (dist > detectRange) return false;
 
         Vector3 eyePos = transform.position + Vector3.up * eyeHeight;
         Vector3 aimPos = target.position + Vector3.up * aimHeightOffset;
-        Vector3 toTarget = aimPos - eyePos;
 
-        // 1. 시야각 검사 (수평 기준)
-        Vector3 toTargetFlat = toTarget;
+        // 1. 벽 차단 검사 (자기 자신/플레이어 콜라이더는 무시)
+        if (IsSightBlocked(eyePos, aimPos)) return false;
+
+        // 2. 근접 인기척: 아주 가까우면 시야각 무시하고 감지
+        if (dist <= proximityRange) return true;
+
+        // 3. 일반 시야각 검사 (수평 기준)
+        Vector3 toTargetFlat = aimPos - eyePos;
         toTargetFlat.y = 0f;
         if (toTargetFlat.sqrMagnitude > 0.01f)
         {
@@ -371,18 +382,28 @@ public class EnemyAI : MonoBehaviour
             if (angle > viewAngle * 0.5f) return false;
         }
 
-        // 2. Raycast로 벽 차단 검사
-        float distance = toTarget.magnitude;
-        if (Physics.Raycast(eyePos, toTarget.normalized, out RaycastHit hit, distance, sightBlockingMask, QueryTriggerInteraction.Ignore))
-        {
-            // 무언가에 막힘. 그게 플레이어 본인이면 통과, 다른 거면 차단
-            if (hit.collider.transform != target && !hit.collider.transform.IsChildOf(target))
-            {
-                return false;
-            }
-        }
-
         return true;
+    }
+
+    /// <summary>
+    /// from→to 사이가 벽 등으로 막혔는지 검사.
+    /// 적 자신과 플레이어의 콜라이더는 차단 대상에서 제외한다.
+    /// </summary>
+    bool IsSightBlocked(Vector3 from, Vector3 to)
+    {
+        Vector3 dir = to - from;
+        float distance = dir.magnitude;
+        if (distance < 0.01f) return false;
+
+        var hits = Physics.RaycastAll(from, dir / distance, distance, sightBlockingMask, QueryTriggerInteraction.Ignore);
+        foreach (var h in hits)
+        {
+            var t = h.collider.transform;
+            if (t == transform || t.IsChildOf(transform)) continue; // 자기 몸은 시야를 막지 않음
+            if (t == target || t.IsChildOf(target)) continue;       // 플레이어는 '막는 것'이 아니라 보려는 대상
+            return true; // 그 외의 무언가(벽/지형/장애물)에 막힘
+        }
+        return false;
     }
 
     // Animator가 본을 계산한 뒤에 상체를 플레이어 쪽으로 보정
@@ -581,6 +602,9 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, loseTargetRange);
+        // 근접 인기척 감지 범위 (시야각 무시)
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, proximityRange);
 
         // 시야각 표시
         Gizmos.color = Color.cyan;
