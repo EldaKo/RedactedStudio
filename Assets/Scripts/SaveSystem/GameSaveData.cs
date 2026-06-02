@@ -6,6 +6,7 @@ public class GameSaveData
 {
     public string version = "1";
     public int armorLevel = 1;
+    public int healthLevel = 1;
     public List<WeaponLevelSave> weaponLevels = new List<WeaponLevelSave>();
     public List<FacilitySave> facilities = new List<FacilitySave>();
     public List<InventorySlotSave> inventorySlots = new List<InventorySlotSave>();

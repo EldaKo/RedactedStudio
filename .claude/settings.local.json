@@ -22,7 +22,9 @@
       "Bash(grep ^guid: Assets/Inventory/__TRACKED_VAR__.prefab.meta)",
       "Bash(grep -B1 'm_Name: __TRACKED_VAR__' Assets/Inventory/__TRACKED_VAR__.prefab)",
       "Bash(grep -n '^--- !u!1 &' Assets/NeoFPS/Samples/Shared/Prefabs/Health/__TRACKED_VAR__.prefab)",
-      "mcp__UnityMCP__manage_build"
+      "mcp__UnityMCP__manage_build",
+      "Bash(grep itemName: Assets/Inventory/ItemData/__TRACKED_VAR__.asset)",
+      "Bash(grep icon: Assets/Inventory/ItemData/__TRACKED_VAR__.asset)"
     ]
   }
 }

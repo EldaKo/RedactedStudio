@@ -12,6 +12,9 @@ public class NeoFPSUpgradeApplier : MonoBehaviour
     [Tooltip("입장 시 자동으로 인벤토리에 추가/착용할 방어구 아이템 프리팹 (Armour_Body, Armour_Helmet 등)")]
     public GameObject[] armorItemPrefabs;
 
+    [Tooltip("체력 시설 레벨별 최대 체력. index = 레벨. 레벨 범위 밖은 마지막 값 사용")]
+    public float[] healthByLevel = new float[] { 100f, 100f, 110f, 120f };
+
     void Start()
     {
         StartCoroutine(ApplyUpgradesRoutine());
@@ -24,8 +27,26 @@ public class NeoFPSUpgradeApplier : MonoBehaviour
         if (PlayerUpgradeManager.Instance == null) yield break;
 
         EquipArmorByLevel();
+        ApplyHealthByLevel();
         EquipSelectedWeapon();
         ApplyWeaponUpgrade();
+    }
+
+    private void ApplyHealthByLevel()
+    {
+        int level = PlayerUpgradeManager.Instance.healthLevel;
+        if (healthByLevel == null || healthByLevel.Length == 0) return;
+        if (level < 1) level = 1;
+        if (level >= healthByLevel.Length) level = healthByLevel.Length - 1;
+        float maxHp = healthByLevel[level];
+
+        var healthManagers = GetComponentsInChildren<BasicHealthManager>(true);
+        foreach (var hm in healthManagers)
+        {
+            hm.healthMax = maxHp;
+            hm.health = maxHp; // 레이드 시작 시 풀피
+            Debug.Log($"[NeoFPS] 최대 체력={maxHp} (Lv{level})");
+        }
     }
 
     private void EquipSelectedWeapon()

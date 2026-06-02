@@ -55,6 +55,7 @@ public static class SaveManager
         if (PlayerUpgradeManager.Instance != null)
         {
             data.armorLevel = PlayerUpgradeManager.Instance.armorLevel;
+            data.healthLevel = PlayerUpgradeManager.Instance.healthLevel;
             foreach (var wl in PlayerUpgradeManager.Instance.weaponLevelList)
                 data.weaponLevels.Add(new WeaponLevelSave { weaponName = wl.weaponName, level = wl.level });
         }
@@ -137,6 +138,7 @@ public static class SaveManager
         if (PlayerUpgradeManager.Instance != null)
         {
             PlayerUpgradeManager.Instance.armorLevel = 1;
+            PlayerUpgradeManager.Instance.healthLevel = 1;
             PlayerUpgradeManager.Instance.weaponLevelList.Clear();
         }
         if (Inventory.HasInstance) Inventory.Instance.ClearAll();

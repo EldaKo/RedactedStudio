@@ -40,6 +40,8 @@ public class FacilityScript : MonoBehaviour
 
     [Header("현재 상태")]
     public int currentLevel = 1;
+    [Tooltip("강화 가능한 최대 레벨")]
+    public int maxLevel = 3;
 
     [Header("카메라 연출")]
     [Tooltip("시설 클릭 시 카메라가 이동할 위치")]
@@ -118,12 +120,14 @@ public class FacilityScript : MonoBehaviour
 
     public void UpdateUI()
     {
+        bool atMax = currentLevel >= maxLevel;
+
         if (nameText != null)  nameText.text  = facilityName;
         if (descText != null)  descText.text  = description;
         if (iconImage != null) iconImage.sprite = facilityIcon;
-        if (levelText != null) levelText.text = $"Level: {currentLevel}";
+        if (levelText != null) levelText.text = atMax ? $"Level: {currentLevel} (MAX)" : $"Level: {currentLevel}";
 
-        bool canUpgrade = upgradeMaterials != null && upgradeMaterials.Count > 0;
+        bool canUpgrade = !atMax && upgradeMaterials != null && upgradeMaterials.Count > 0;
 
         if (needItemSlots != null)
         {
@@ -180,6 +184,8 @@ public class FacilityScript : MonoBehaviour
         {
             if (upgradeType == UpgradeType.Armor)
                 PlayerUpgradeManager.Instance.armorLevel = currentLevel;
+            else if (upgradeType == UpgradeType.Health)
+                PlayerUpgradeManager.Instance.healthLevel = currentLevel;
         }
     }
 
@@ -196,6 +202,7 @@ public class FacilityScript : MonoBehaviour
 
     private void OnUpgradeClicked()
     {
+        if (currentLevel >= maxLevel) return;
         if (!Inventory.HasInstance || upgradeMaterials == null || upgradeMaterials.Count == 0) return;
 
         foreach (var req in upgradeMaterials)

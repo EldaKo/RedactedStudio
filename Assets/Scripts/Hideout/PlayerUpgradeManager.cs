@@ -14,6 +14,7 @@ public class PlayerUpgradeManager : MonoBehaviour
 
     [Header("캐릭터 현재 상태")]
     public int armorLevel = 1;
+    public int healthLevel = 1;
 
     [Header("무기 레벨 목록 (인스펙터 확인용)")]
     public List<WeaponLevelData> weaponLevelList = new List<WeaponLevelData>();

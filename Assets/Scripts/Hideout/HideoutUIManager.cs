@@ -135,6 +135,7 @@ public class HideoutUIManager : MonoBehaviour
         if (PlayerUpgradeManager.Instance != null)
         {
             PlayerUpgradeManager.Instance.armorLevel = data.armorLevel;
+            PlayerUpgradeManager.Instance.healthLevel = data.healthLevel;
             PlayerUpgradeManager.Instance.weaponLevelList.Clear();
             foreach (var w in data.weaponLevels)
                 PlayerUpgradeManager.Instance.weaponLevelList.Add(new WeaponLevelData { weaponName = w.weaponName, level = w.level });
