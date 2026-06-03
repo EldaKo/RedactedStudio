@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Collider))]
 public class ExitZone : MonoBehaviour
@@ -9,6 +10,13 @@ public class ExitZone : MonoBehaviour
     [Header("열쇠 근접 알림")]
     [Tooltip("이 거리 이내에 열쇠가 있으면 근처 알림을 표시합니다")]
     public float keyNearbyDistance = 8f;
+
+    [Header("클리어 후 씬 전환")]
+    [Tooltip("탈출 성공 시 이동할 씬 이름 (Build Settings에 등록되어 있어야 함)")]
+    public string nextSceneName = "Hideout";
+
+    [Tooltip("클리어 화면을 보여준 뒤 다음 씬으로 넘어가기까지 대기 시간 (unscaled)")]
+    public float clearScreenDuration = 2.5f;
 
     private bool cleared;
     private float nextPromptTime;
@@ -79,7 +87,8 @@ public class ExitZone : MonoBehaviour
         {
             cleared = true;
             showClear = true;
-            StartCoroutine(FreezeAfter(1f));
+            EscapeEvents.NotifyEscapeSuccess();
+            StartCoroutine(HandleEscapeClear());
         }
         else
         {
@@ -90,10 +99,13 @@ public class ExitZone : MonoBehaviour
         }
     }
 
-    IEnumerator FreezeAfter(float t)
+    IEnumerator HandleEscapeClear()
     {
-        yield return new WaitForSeconds(t);
         Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(clearScreenDuration);
+        Time.timeScale = 1f;
+        SaveManager.SaveOnHideoutLoad = true;
+        SceneManager.LoadScene(nextSceneName);
     }
 
     void EnsureStyles()

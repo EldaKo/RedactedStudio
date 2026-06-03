@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6bea9e973aac3704484846e5251c132e
+guid: 363b3c072924a78428e09b02a0c030b0
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 100100000
@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 150179
   packageName: 'NeoFPS: FPS Controller, Template & Toolkit'
   packageVersion: 1.1.36
-  assetPath: Assets/NeoFPS/Samples/Shared/Prefabs/Explosions/Explosion_360_Large.prefab
+  assetPath: Assets/Prefab/SwappableInventory/Grenade/Explosion_360_Large.prefab
   uploadId: 899482
