@@ -4,50 +4,50 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
-    [Header("Button")]
-    [SerializeField] private Button StartBtn;
-    [SerializeField] private Button QuitBtn;
-    [SerializeField] private Button TutorialBtn;
+    [Header("Buttons")]
+    [SerializeField] private Button continueBtn;
+    [SerializeField] private Button newGameBtn;
+    [SerializeField] private Button tutorialBtn;
+    [SerializeField] private Button quitBtn;
 
     void Start()
     {
- 
-        if (StartBtn != null)
+        if (continueBtn != null)
         {
-            StartBtn.onClick.AddListener(PlayGame);
+            continueBtn.onClick.AddListener(ContinueGame);
+            continueBtn.interactable = SaveManager.HasSave();
         }
 
-        if (QuitBtn != null)
-        {
-            QuitBtn.onClick.AddListener(QuitGame);
-        }
-
-        if (TutorialBtn != null)
-        {
-            TutorialBtn.onClick.AddListener(StartTutorial);
-        }
-
+        if (newGameBtn != null) newGameBtn.onClick.AddListener(NewGame);
+        if (tutorialBtn != null) tutorialBtn.onClick.AddListener(StartTutorial);
+        if (quitBtn != null) quitBtn.onClick.AddListener(QuitGame);
     }
-    public void PlayGame()
-    {
-        Debug.Log("start clicked!");
-        SceneManager.LoadScene("CityMapScene");
-    }
-    public void QuitGame()
-    {
-        Debug.Log("quit clicked!");
 
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-            // 실제 빌드된 게임에서 종료
-            Application.Quit();
-#endif
+    public void ContinueGame()
+    {
+        Debug.Log("continue clicked!");
+        SaveManager.ContinueGame();
+    }
+
+    public void NewGame()
+    {
+        Debug.Log("new game clicked!");
+        SaveManager.StartNewGame();
     }
 
     public void StartTutorial()
     {
         Debug.Log("tutorial clicked!");
         SceneManager.LoadScene("TutorialScene");
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("quit clicked!");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

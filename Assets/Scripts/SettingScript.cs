@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using NeoFPS;
 
 public class SettingScript : MonoBehaviour
 {
@@ -19,26 +20,49 @@ public class SettingScript : MonoBehaviour
             settingsPanel.SetActive(false);
 
         if (goMainBtn != null)
-        {
             goMainBtn.onClick.AddListener(quitGame);
-        }
 
         if (volumeSlider != null && bgmSource != null)
         {
             float saved = PlayerPrefs.GetFloat("BGMVolume", 1f);
             volumeSlider.value = saved;
             bgmSource.volume = saved;
-
             volumeSlider.onValueChanged.AddListener(SetVolume);
+        }
+
+        if (FpsSettings.audio != null)
+        {
+            FpsSettings.audio.onMusicVolumeChanged += ApplyMusicVolume;
+            FpsSettings.audio.onMasterVolumeChanged += ApplyMasterVolume;
+            ApplyMusicVolume(FpsSettings.audio.musicVolume);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (FpsSettings.audio != null)
+        {
+            FpsSettings.audio.onMusicVolumeChanged -= ApplyMusicVolume;
+            FpsSettings.audio.onMasterVolumeChanged -= ApplyMasterVolume;
         }
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
-        {
             ToggleSettings();
-        }
+    }
+
+    private void ApplyMusicVolume(float value)
+    {
+        if (bgmSource != null)
+            bgmSource.volume = value * (FpsSettings.audio != null ? FpsSettings.audio.masterVolume : 1f);
+    }
+
+    private void ApplyMasterVolume(float value)
+    {
+        if (bgmSource != null)
+            bgmSource.volume = (FpsSettings.audio != null ? FpsSettings.audio.musicVolume : 1f) * value;
     }
 
     public void ToggleSettings()

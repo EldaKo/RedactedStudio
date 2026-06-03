@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4f804b6025c85b459496b0a634dcf0b, type: 3}
+  m_Name: WeaponDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weapons:
+  - id: pistol
+    displayName: "\uAD8C\uCD1D"
+    weaponIcon: {fileID: 21300002, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 5462795976813982838, guid: 0a769223aa9f38f4485fe6938e75a2b4, type: 3}
+    ammoPickupPrefab: {fileID: 1415952182397020, guid: de528043524c053428cbe8065ad9842f, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 7ac4d2b7ef014b8418c140accc0d18a4, type: 2}
+      baseAmount: 2
+    - material: {fileID: 11400000, guid: 786d74b1f79ab914c91d35ed677b14eb, type: 2}
+      baseAmount: 2
+  - id: revolver
+    displayName: "\uB9AC\uBCFC\uBC84"
+    weaponIcon: {fileID: 21300004, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 2973183332416336341, guid: 75f02fe55af503a409b227a1a3100ac6, type: 3}
+    ammoPickupPrefab: {fileID: 1876588562436386, guid: 265df17a6a26486458b84739a1ac5c0f, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 7ac4d2b7ef014b8418c140accc0d18a4, type: 2}
+      baseAmount: 3
+    - material: {fileID: 11400000, guid: 0c2777c0eae967646adc45b994850e57, type: 2}
+      baseAmount: 2
+    - material: {fileID: 11400000, guid: 9bd1af544cb167a44b74717c2d62af2a, type: 2}
+      baseAmount: 1
+  - id: grenadelauncher
+    displayName: "\uC720\uD0C4\uBC1C\uC0AC\uAE30"
+    weaponIcon: {fileID: 21300012, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 1282201497105930985, guid: e741cbd475b04b441a43256209b36a7a, type: 3}
+    ammoPickupPrefab: {fileID: 1011083427256276, guid: 89477e357709fcf48b5c3c02d3c2b450, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 786d74b1f79ab914c91d35ed677b14eb, type: 2}
+      baseAmount: 2
+    - material: {fileID: 11400000, guid: 0c2777c0eae967646adc45b994850e57, type: 2}
+      baseAmount: 5
+    - material: {fileID: 11400000, guid: b81cd12b1d1e92044a1e48bca730814d, type: 2}
+      baseAmount: 2
+  - id: assaultrifle
+    displayName: "\uB3CC\uACA9\uC18C\uCD1D"
+    weaponIcon: {fileID: 21300008, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 6321236343277207109, guid: def1a099f6ecfd745b4fa7ae9e5f7149, type: 3}
+    ammoPickupPrefab: {fileID: 1276440111773484, guid: e8ac8374ebd86654da3f498a22490c7a, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 786d74b1f79ab914c91d35ed677b14eb, type: 2}
+      baseAmount: 7
+    - material: {fileID: 11400000, guid: b81cd12b1d1e92044a1e48bca730814d, type: 2}
+      baseAmount: 5
+    - material: {fileID: 11400000, guid: 9bd1af544cb167a44b74717c2d62af2a, type: 2}
+      baseAmount: 3
+  - id: shotgun
+    displayName: "\uC0F7\uAC74"
+    weaponIcon: {fileID: 21300006, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 3904043971547912162, guid: 579e03fcfae8b4a4a8e4bafe53ead3bf, type: 3}
+    ammoPickupPrefab: {fileID: 1277669658375282, guid: 21cf6f4f9a99eed46a5b408fcd03639e, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 7ac4d2b7ef014b8418c140accc0d18a4, type: 2}
+      baseAmount: 7
+    - material: {fileID: 11400000, guid: 0c2777c0eae967646adc45b994850e57, type: 2}
+      baseAmount: 7
+    - material: {fileID: 11400000, guid: 786d74b1f79ab914c91d35ed677b14eb, type: 2}
+      baseAmount: 2
+  - id: sniperrifle
+    displayName: "\uC800\uACA9\uC18C\uCD1D"
+    weaponIcon: {fileID: 21300010, guid: c7c2dd9746279004098ca81e023fb910, type: 3}
+    weaponPrefab: {fileID: 783660794401483061, guid: 9319a027e0579894fbd73a9f0f26a5da, type: 3}
+    ammoPickupPrefab: {fileID: 1519684083032848, guid: b4e03f5b704e54c46a53c27047f53cdd, type: 3}
+    unlockMaterials:
+    - material: {fileID: 11400000, guid: 786d74b1f79ab914c91d35ed677b14eb, type: 2}
+      baseAmount: 3
+    - material: {fileID: 11400000, guid: 9bd1af544cb167a44b74717c2d62af2a, type: 2}
+      baseAmount: 10
+    - material: {fileID: 11400000, guid: b81cd12b1d1e92044a1e48bca730814d, type: 2}
+      baseAmount: 5

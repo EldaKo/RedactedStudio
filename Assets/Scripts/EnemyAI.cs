@@ -26,9 +26,9 @@ public class EnemyAI : MonoBehaviour
     [Range(0f, 1f)][SerializeField] float leftHandIKWeight = 1f;
 
     [Header("Detection")]
-    [SerializeField] float detectRange = 20f;
-    [SerializeField] float attackRange = 10f;
-    [SerializeField] float loseTargetRange = 25f;
+    [SerializeField] float detectRange = 30f;
+    [SerializeField] float attackRange = 25f;
+    [SerializeField] float loseTargetRange = 40f;
 
     [Header("Vision")]
     [Tooltip("시야각 (도). 360 = 전방위, 120 = 정면 시야")]
@@ -37,6 +37,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float eyeHeight = 1.6f;
     [Tooltip("시야 차단 검사할 Layer (벽/지형만 체크. CharacterControllers는 빼야 함)")]
     [SerializeField] LayerMask sightBlockingMask = ~0;
+    [Tooltip("이 거리 안에서는 시야각과 무관하게 '인기척'으로 감지 (등 뒤·옆도 감지). 벽으로 막히면 감지 안 됨")]
+    [SerializeField] float proximityRange = 6f;
 
     [Header("Search Behavior")]
     [Tooltip("시야 잃은 후 마지막 위치에서 두리번거리는 시간 (초)")]
@@ -45,6 +47,12 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float searchRotationSpeed = 60f;
     [Tooltip("마지막 본 위치 도달 판정 거리 (m)")]
     [SerializeField] float lastSeenReachThreshold = 1.5f;
+
+    [Header("Combat Awareness")]
+    [Tooltip("데미지를 받으면 시야와 무관하게 추적 모드로 전환되는 시간 (초)")]
+    [SerializeField] float alertedDuration = 10f;
+    [Tooltip("같은 적을 한 번 더 맞췄을 때 알림 시간 갱신 여부")]
+    [SerializeField] bool refreshAlertOnHit = true;
 
     [Header("Movement")]
     [SerializeField] float moveSpeed = 3.5f;
@@ -56,6 +64,12 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float maxHp = 100f;
     [SerializeField] LayerMask shootLayerMask = ~0;
     [SerializeField] float aimHeightOffset = 1.0f;
+    [Tooltip("헤드를 노릴 때의 조준 높이 (캐릭터 발 기준 머리 위치)")]
+    [SerializeField] float headAimHeightOffset = 1.7f;
+    [Tooltip("헤드를 노릴 확률 (0 = 항상 몸통, 1 = 항상 헤드)")]
+    [Range(0f, 1f)][SerializeField] float headshotChance = 0.2f;
+    [Tooltip("헤드/몸통 선택을 갱신하는 주기 (초). 너무 짧으면 매 발사마다 흔들림")]
+    [SerializeField] float aimTargetUpdateInterval = 1.5f;
 
     [Header("Visual Effects")]
     [Tooltip("총구 화염 프리팹 (사격 시 muzzle 위치에 생성)")]
@@ -75,6 +89,14 @@ public class EnemyAI : MonoBehaviour
     [Tooltip("사망 후 시체 유지 시간 (0 이하 = 영원히, 양수 = 그 시간 후 사라짐)")]
     [SerializeField] float corpseLifetime = -1f;
 
+    [Header("Loot Drop")]
+    [Tooltip("사망 시 드랍 후보 아이템 프리팹들 (Assets/Inventory의 재료들). 이 중 하나가 랜덤 드랍됨")]
+    [SerializeField] GameObject[] dropPrefabs;
+    [Tooltip("아이템을 드랍할 확률 (0 = 안 함, 1 = 항상)")]
+    [Range(0f, 1f)][SerializeField] float dropChance = 0.35f;
+    [Tooltip("드랍 위치 높이 오프셋 (시체 위로 살짝 띄움)")]
+    [SerializeField] float dropHeightOffset = 0.5f;
+
     // --- internal ---
     NavMeshAgent agent;
     Animator anim;
@@ -89,6 +111,14 @@ public class EnemyAI : MonoBehaviour
     float searchTimer;
     float searchRotationDir = 1f;
     float searchRotationFlipTimer;
+
+    // 알림 상태
+    float alertedUntil = 0f;
+    bool IsAlerted => Time.time < alertedUntil;
+
+    // 헤드샷 조준 상태
+    bool aimingHead = false;
+    float lastAimTargetUpdate = -999f;
 
     static readonly int HashSpeed = Animator.StringToHash("Speed");
     static readonly int HashIsShooting = Animator.StringToHash("IsShooting");
@@ -107,6 +137,7 @@ public class EnemyAI : MonoBehaviour
         if (healthManager != null)
         {
             healthManager.onIsAliveChanged += OnAliveChanged;
+            healthManager.onHealthChanged += OnHealthChanged;
         }
     }
 
@@ -115,6 +146,7 @@ public class EnemyAI : MonoBehaviour
         if (healthManager != null)
         {
             healthManager.onIsAliveChanged -= OnAliveChanged;
+            healthManager.onHealthChanged -= OnHealthChanged;
         }
     }
 
@@ -124,6 +156,73 @@ public class EnemyAI : MonoBehaviour
         {
             Die();
         }
+    }
+
+    /// <summary>
+    /// BasicHealthManager가 데미지를 받았을 때 자동 호출.
+    /// 시야와 무관하게 플레이어 위치를 향해 추적 모드 진입.
+    /// </summary>
+    void OnHealthChanged(float from, float to, bool critical, IDamageSource source)
+    {
+        if (state == State.Dead) return;
+
+        // 회복은 무시 (체력이 줄어든 경우만 알림)
+        if (to >= from) return;
+
+        // 이미 알림 상태일 때 갱신할지 여부
+        if (IsAlerted && !refreshAlertOnHit) return;
+
+        // 알림 시간 갱신
+        alertedUntil = Time.time + alertedDuration;
+
+        // 아직 target 없으면 즉시 acquire
+        if (target == null)
+        {
+            var playerGo = GameObject.FindGameObjectWithTag("Player");
+            if (playerGo != null) target = playerGo.transform;
+        }
+
+        if (target == null) return;
+
+        // 마지막 본 위치를 현재 플레이어 위치로 강제 갱신
+        // (시야 안 보여도 어디서 쐈는지는 알 수 있다는 가정)
+        lastKnownPosition = target.position;
+
+        // 상태에 따라 적절히 전환
+        switch (state)
+        {
+            case State.Idle:
+                // 안 보이고 있다가 갑자기 맞음 → Search로 진입 (마지막 본 위치 = 플레이어 현재 위치)
+                EnterSearch();
+                break;
+
+            case State.Search:
+                // Search 중에 또 맞음 → 타이머 리셋, 위치 갱신
+                searchTimer = 0f;
+                break;
+
+            // Chase, Attack 상태에선 이미 추적 중이라 추가 처리 불필요
+            // (하지만 알림 시간은 갱신됨 → loseTargetRange 무시됨)
+        }
+    }
+
+    /// <summary>
+    /// 일정 주기로 헤드/몸통 노림을 갱신.
+    /// </summary>
+    void UpdateAimTarget()
+    {
+        if (Time.time < lastAimTargetUpdate + aimTargetUpdateInterval) return;
+
+        lastAimTargetUpdate = Time.time;
+        aimingHead = (Random.value < headshotChance);
+    }
+
+    /// <summary>
+    /// 현재 노릴 부위의 조준 높이 반환 (헤드/몸통).
+    /// </summary>
+    float GetCurrentAimHeight()
+    {
+        return aimingHead ? headAimHeightOffset : aimHeightOffset;
     }
 
     void Start()
@@ -145,7 +244,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         float dist = Vector3.Distance(transform.position, target.position);
-        bool canSee = HasLineOfSight();
+        bool canSee = CanDetectTarget(dist);
 
         switch (state)
         {
@@ -170,7 +269,8 @@ public class EnemyAI : MonoBehaviour
                 }
 
                 if (dist < attackRange) state = State.Attack;
-                else if (dist > loseTargetRange) state = State.Idle;
+                // 알림 상태일 땐 lose 안 함
+                else if (dist > loseTargetRange && !IsAlerted) state = State.Idle;
                 break;
 
             case State.Attack:
@@ -254,18 +354,27 @@ public class EnemyAI : MonoBehaviour
     }
 
     /// <summary>
-    /// 시야선 검사: 시야각 + Raycast 통합. 벽 차단 시 false 리턴.
+    /// 종합 감지 검사. 다음을 모두 만족하면 true:
+    ///  - detectRange 안
+    ///  - 벽에 막히지 않음
+    ///  - (시야각 안) 또는 (proximityRange 안 = 인기척으로 등 뒤도 감지)
     /// </summary>
-    bool HasLineOfSight()
+    bool CanDetectTarget(float dist)
     {
         if (target == null) return false;
+        if (dist > detectRange) return false;
 
         Vector3 eyePos = transform.position + Vector3.up * eyeHeight;
         Vector3 aimPos = target.position + Vector3.up * aimHeightOffset;
-        Vector3 toTarget = aimPos - eyePos;
 
-        // 1. 시야각 검사 (수평 기준)
-        Vector3 toTargetFlat = toTarget;
+        // 1. 벽 차단 검사 (자기 자신/플레이어 콜라이더는 무시)
+        if (IsSightBlocked(eyePos, aimPos)) return false;
+
+        // 2. 근접 인기척: 아주 가까우면 시야각 무시하고 감지
+        if (dist <= proximityRange) return true;
+
+        // 3. 일반 시야각 검사 (수평 기준)
+        Vector3 toTargetFlat = aimPos - eyePos;
         toTargetFlat.y = 0f;
         if (toTargetFlat.sqrMagnitude > 0.01f)
         {
@@ -273,18 +382,28 @@ public class EnemyAI : MonoBehaviour
             if (angle > viewAngle * 0.5f) return false;
         }
 
-        // 2. Raycast로 벽 차단 검사
-        float distance = toTarget.magnitude;
-        if (Physics.Raycast(eyePos, toTarget.normalized, out RaycastHit hit, distance, sightBlockingMask, QueryTriggerInteraction.Ignore))
-        {
-            // 무언가에 막힘. 그게 플레이어 본인이면 통과, 다른 거면 차단
-            if (hit.collider.transform != target && !hit.collider.transform.IsChildOf(target))
-            {
-                return false;
-            }
-        }
-
         return true;
+    }
+
+    /// <summary>
+    /// from→to 사이가 벽 등으로 막혔는지 검사.
+    /// 적 자신과 플레이어의 콜라이더는 차단 대상에서 제외한다.
+    /// </summary>
+    bool IsSightBlocked(Vector3 from, Vector3 to)
+    {
+        Vector3 dir = to - from;
+        float distance = dir.magnitude;
+        if (distance < 0.01f) return false;
+
+        var hits = Physics.RaycastAll(from, dir / distance, distance, sightBlockingMask, QueryTriggerInteraction.Ignore);
+        foreach (var h in hits)
+        {
+            var t = h.collider.transform;
+            if (t == transform || t.IsChildOf(transform)) continue; // 자기 몸은 시야를 막지 않음
+            if (t == target || t.IsChildOf(target)) continue;       // 플레이어는 '막는 것'이 아니라 보려는 대상
+            return true; // 그 외의 무언가(벽/지형/장애물)에 막힘
+        }
+        return false;
     }
 
     // Animator가 본을 계산한 뒤에 상체를 플레이어 쪽으로 보정
@@ -292,7 +411,8 @@ public class EnemyAI : MonoBehaviour
     {
         if (state != State.Attack || aimBone == null || target == null) return;
 
-        Vector3 aimPoint = target.position + Vector3.up * aimHeightOffset;
+        // 헤드/몸통 노림과 같은 부위로 상체도 조준
+        Vector3 aimPoint = target.position + Vector3.up * GetCurrentAimHeight();
         Vector3 dir = aimPoint - aimBone.position;
         if (dir.sqrMagnitude < 0.01f) return;
 
@@ -328,17 +448,32 @@ public class EnemyAI : MonoBehaviour
     {
         if (muzzle == null || target == null) return;
 
-        Vector3 aimPoint = target.position + Vector3.up * aimHeightOffset;
+        // 헤드/몸통 노림 갱신 (aimTargetUpdateInterval 주기)
+        UpdateAimTarget();
+
+        Vector3 aimPoint = target.position + Vector3.up * GetCurrentAimHeight();
         Vector3 dir = (aimPoint - muzzle.position).normalized;
 
         // 시각효과 (머즐 플래시 + 총알)
         SpawnMuzzleFlash();
         SpawnBullet(muzzle.position, dir);
 
-        // 데미지는 즉시 Raycast로 처리
-        if (Physics.Raycast(muzzle.position, dir, out RaycastHit hit, 100f, shootLayerMask))
+        // RaycastAll로 모든 hit을 받아서 자기 자신 제외
+        var hits = Physics.RaycastAll(muzzle.position, dir, 100f, shootLayerMask, QueryTriggerInteraction.Ignore);
+        if (hits.Length == 0) return;
+
+        // 거리순 정렬 (가까운 것부터)
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        // 자기 자신(또는 자식) 무시하고 첫 유효 hit 찾기
+        foreach (var hit in hits)
         {
+            if (hit.collider.transform == transform) continue;
+            if (hit.collider.transform.IsChildOf(transform)) continue;
+
+            // 첫 유효 hit에 데미지 적용 후 종료
             DealDamage(hit);
+            return;
         }
     }
 
@@ -410,11 +545,44 @@ public class EnemyAI : MonoBehaviour
         // 바닥에 시체 정렬 (NavMeshAgent 꺼지면 캐릭터가 공중에 뜨는 문제 해결)
         SnapCorpseToGround();
 
+        // 재료 드랍
+        TryDropLoot();
+
+        // 탄약 드랍 (플레이어가 장착한 무기 탄종에 맞춰)
+        TryDropAmmo();
+
         // 시체 자동 제거 (옵션)
         if (corpseLifetime > 0f)
         {
             Destroy(gameObject, corpseLifetime);
         }
+    }
+
+    void TryDropLoot()
+    {
+        if (dropPrefabs == null || dropPrefabs.Length == 0) return;
+        if (Random.value > dropChance) return;
+
+        var prefab = dropPrefabs[Random.Range(0, dropPrefabs.Length)];
+        if (prefab == null) return;
+
+        Vector3 pos = transform.position + Vector3.up * dropHeightOffset;
+        Instantiate(prefab, pos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+    }
+
+    void TryDropAmmo()
+    {
+        if (Random.value > dropChance) return;
+
+        var db = WeaponData.Get();
+        if (db == null) { Debug.LogWarning("[Ammo] WeaponDatabase 못 찾음 (Resources/WeaponDatabase)"); return; }
+
+        var weapon = db.GetEquippedOrFirst();
+        if (weapon == null || weapon.ammoPickupPrefab == null) return;
+
+        Vector3 pos = transform.position + Vector3.up * dropHeightOffset
+                      + new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
+        Instantiate(weapon.ammoPickupPrefab, pos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
     }
 
     void SnapCorpseToGround()
@@ -434,6 +602,9 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, loseTargetRange);
+        // 근접 인기척 감지 범위 (시야각 무시)
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, proximityRange);
 
         // 시야각 표시
         Gizmos.color = Color.cyan;

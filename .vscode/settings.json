@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "2026_UnityCapstone--.slnx",
+    "dotnet.defaultSolution": "2026_UnityCapstone-me.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }

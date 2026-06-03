@@ -1,0 +1,369 @@
+{
+    "controls": [
+        {
+            "id": "bb08958c-b308-4d16-884f-952492071dd1",
+            "path": "Movement/Forwards",
+            "bindings": [
+                "/Keyboard/w",
+                "<Keyboard>/upArrow"
+            ]
+        },
+        {
+            "id": "c8150e14-4c56-4416-b62a-5114775576fe",
+            "path": "Movement/Backwards",
+            "bindings": [
+                "<Keyboard>/s",
+                "<Keyboard>/downArrow"
+            ]
+        },
+        {
+            "id": "8a828ccd-9304-4588-b54b-96e6f928ceb2",
+            "path": "Movement/Strafe Left",
+            "bindings": [
+                "<Keyboard>/a",
+                "<Keyboard>/leftArrow"
+            ]
+        },
+        {
+            "id": "240237bb-58c8-45ca-b58a-2135fb464c73",
+            "path": "Movement/Strafe Right",
+            "bindings": [
+                "<Keyboard>/d",
+                "<Keyboard>/rightArrow"
+            ]
+        },
+        {
+            "id": "99fce94c-531b-44f9-bff9-1e764e215793",
+            "path": "Movement/Jump",
+            "bindings": [
+                "<Keyboard>/space",
+                ""
+            ]
+        },
+        {
+            "id": "679ba57a-3573-4c56-8a9c-9f2bfe2aa988",
+            "path": "Movement/Sprint",
+            "bindings": [
+                "",
+                ""
+            ]
+        },
+        {
+            "id": "b7aecd27-b69a-4f9b-9525-754c9ca5f572",
+            "path": "Movement/Sprint Toggle",
+            "bindings": [
+                "<Keyboard>/leftShift",
+                ""
+            ]
+        },
+        {
+            "id": "49dfedf0-7e15-4152-ac71-12cab2dc185d",
+            "path": "Movement/Crouch",
+            "bindings": [
+                "",
+                ""
+            ]
+        },
+        {
+            "id": "303a4389-ebcd-4c5b-a772-a2b67524b2ff",
+            "path": "Movement/Crouch Toggle",
+            "bindings": [
+                "<Keyboard>/leftCtrl",
+                ""
+            ]
+        },
+        {
+            "id": "921c0c7f-a68d-4e6a-8273-a05336032756",
+            "path": "Movement/Lean Left",
+            "bindings": [
+                "<Keyboard>/z",
+                ""
+            ]
+        },
+        {
+            "id": "43ea9456-0e88-49f1-8ba8-e2afff1b7212",
+            "path": "Movement/Lean Right",
+            "bindings": [
+                "<Keyboard>/c",
+                ""
+            ]
+        },
+        {
+            "id": "49e8c8fd-c411-4e3c-90ba-44b7ff869c6d",
+            "path": "Combat/Primary Fire",
+            "bindings": [
+                "<Mouse>/leftButton",
+                ""
+            ]
+        },
+        {
+            "id": "a69fd6f3-317f-4322-90b3-a09f5b0f35fb",
+            "path": "Combat/Secondary Fire",
+            "bindings": [
+                "<Mouse>/rightButton",
+                ""
+            ]
+        },
+        {
+            "id": "285cbfce-5b4e-4604-9269-e4dbc0235e0b",
+            "path": "Combat/Aim",
+            "bindings": [
+                "",
+                ""
+            ]
+        },
+        {
+            "id": "2542dba3-e724-4efb-be37-e439bd0047da",
+            "path": "Combat/Aim Toggle",
+            "bindings": [
+                "<Mouse>/rightButton",
+                ""
+            ]
+        },
+        {
+            "id": "ac79eaed-e152-4c5e-9467-a1a4fd377b99",
+            "path": "Combat/Reload",
+            "bindings": [
+                "<Keyboard>/r",
+                ""
+            ]
+        },
+        {
+            "id": "fa97814f-b93f-4852-b968-45e5a3c5a43d",
+            "path": "Combat/Flashlight",
+            "bindings": [
+                "<Keyboard>/f",
+                ""
+            ]
+        },
+        {
+            "id": "7f57b87d-d019-4c6e-b95c-dc81eb8f8e21",
+            "path": "Combat/Ability",
+            "bindings": [
+                "<Keyboard>/leftAlt",
+                ""
+            ]
+        },
+        {
+            "id": "de0a01bf-793c-4eb1-a5f5-70703bbcce8a",
+            "path": "Combat/Switch Weapon Modes",
+            "bindings": [
+                "<Keyboard>/t",
+                "<Mouse>/middleButton"
+            ]
+        },
+        {
+            "id": "4d240bb6-883b-43e3-b5a4-992edc426d81",
+            "path": "Combat/Optics Brightness Up",
+            "bindings": [
+                "<Keyboard>/numpadPlus",
+                ""
+            ]
+        },
+        {
+            "id": "ee1ebd55-a5d3-4ca9-9f60-90b2a6dc0fc1",
+            "path": "Combat/Optics Brightness Down",
+            "bindings": [
+                "<Keyboard>/numpadMinus",
+                ""
+            ]
+        },
+        {
+            "id": "05986753-fc49-4d37-aa8c-d093904b1c3e",
+            "path": "Combat/Quick Throw",
+            "bindings": [
+                "",
+                ""
+            ]
+        },
+        {
+            "id": "6cdfd6f8-5562-45da-afe9-6ec012742368",
+            "path": "Combat/Quick Melee",
+            "bindings": [
+                "<Mouse>/backButton",
+                ""
+            ]
+        },
+        {
+            "id": "153d2117-2dbf-4715-bb47-8931cdcc1900",
+            "path": "Inventory/Next Weapon",
+            "bindings": [
+                "<Keyboard>/rightBracket",
+                ""
+            ]
+        },
+        {
+            "id": "99512a04-2083-4d62-ac9a-c56b24bd782a",
+            "path": "Inventory/Previous Weapon",
+            "bindings": [
+                "<Keyboard>/leftBracket",
+                ""
+            ]
+        },
+        {
+            "id": "71e8d2bc-b061-4729-9c41-dcaa1ba16c46",
+            "path": "Inventory/Switch Weapon",
+            "bindings": [
+                "<Keyboard>/q",
+                ""
+            ]
+        },
+        {
+            "id": "a3f3a440-bbdd-47b4-a556-38fa1d9ebf2f",
+            "path": "Inventory/Quick-Slot 1",
+            "bindings": [
+                "<Keyboard>/1",
+                ""
+            ]
+        },
+        {
+            "id": "4752284f-8e1a-49e3-9206-e50eeda955f5",
+            "path": "Inventory/Quick-Slot 2",
+            "bindings": [
+                "",
+                ""
+            ]
+        },
+        {
+            "id": "5b1815b2-48cd-41cf-8f04-a30a793d28c2",
+            "path": "Inventory/Quick-Slot 3",
+            "bindings": [
+                "<Keyboard>/3",
+                ""
+            ]
+        },
+        {
+            "id": "4c105fc0-3712-4f3b-880a-e2eb97c1d8cb",
+            "path": "Inventory/Quick-Slot 4",
+            "bindings": [
+                "<Keyboard>/4",
+                ""
+            ]
+        },
+        {
+            "id": "9622a07b-13b8-4986-bb29-23b9ff8d46e1",
+            "path": "Inventory/Quick-Slot 5",
+            "bindings": [
+                "<Keyboard>/5",
+                ""
+            ]
+        },
+        {
+            "id": "8b43eed2-9709-4c06-acb2-63339d56eac5",
+            "path": "Inventory/Quick-Slot 6",
+            "bindings": [
+                "<Keyboard>/6",
+                ""
+            ]
+        },
+        {
+            "id": "d7f595b3-dd63-4d7f-96c6-6faffd3c703f",
+            "path": "Inventory/Quick-Slot 7",
+            "bindings": [
+                "<Keyboard>/7",
+                ""
+            ]
+        },
+        {
+            "id": "7c003e11-b792-4ebc-8c6d-77a8ccae6147",
+            "path": "Inventory/Quick-Slot 8",
+            "bindings": [
+                "<Keyboard>/8",
+                ""
+            ]
+        },
+        {
+            "id": "9657eb06-717a-4331-9c3f-de9d20c9cef3",
+            "path": "Inventory/Quick-Slot 9",
+            "bindings": [
+                "<Keyboard>/9",
+                ""
+            ]
+        },
+        {
+            "id": "57ca1e14-f445-4933-bf5a-a60c2a1b2c6c",
+            "path": "Inventory/Quick-Slot 10",
+            "bindings": [
+                "<Keyboard>/0",
+                ""
+            ]
+        },
+        {
+            "id": "6f0267ac-3883-47e8-a21e-4e8c103583b5",
+            "path": "Inventory/Holster Weapon",
+            "bindings": [
+                "<Keyboard>/h",
+                ""
+            ]
+        },
+        {
+            "id": "fba9c24e-3cfb-4601-903c-1456a75c4d07",
+            "path": "Inventory/Drop Weapon",
+            "bindings": [
+                "<Keyboard>/g",
+                ""
+            ]
+        },
+        {
+            "id": "be4a714c-9e20-4b29-a545-98e8fbb55a19",
+            "path": "Inventory/Inspect Weapon",
+            "bindings": [
+                "<Keyboard>/l",
+                ""
+            ]
+        },
+        {
+            "id": "cc0162db-51e5-40bd-9c4c-4690bcadb520",
+            "path": "Interaction/Use",
+            "bindings": [
+                "<Keyboard>/e",
+                ""
+            ]
+        },
+        {
+            "id": "ed4f03a2-cf17-4aa9-90e6-c1ae71272f68",
+            "path": "Interaction/Pick Up",
+            "bindings": [
+                "<Keyboard>/x",
+                ""
+            ]
+        },
+        {
+            "id": "fa9d80e9-6ef8-43f2-ade1-66d82b350030",
+            "path": "Miscellaneous/Quick Menu",
+            "bindings": [
+                "<Keyboard>/slash",
+                ""
+            ]
+        },
+        {
+            "id": "a5c137df-6fc1-45af-84c0-a8658a68ca22",
+            "path": "Miscellaneous/Quick Save",
+            "bindings": [
+                "<Keyboard>/f5",
+                ""
+            ]
+        },
+        {
+            "id": "2bfa5e64-20ce-44dc-9a42-4a1e13950137",
+            "path": "Miscellaneous/Quick Load",
+            "bindings": [
+                "<Keyboard>/f9",
+                ""
+            ]
+        },
+        {
+            "id": "23ae37ae-5681-48f0-8515-0b5968f19892",
+            "path": "Miscellaneous/Menu",
+            "bindings": []
+        },
+        {
+            "id": "c83c30aa-c26a-4c26-8de3-a48c1b575ab3",
+            "path": "Miscellaneous/HUD Toggle",
+            "bindings": [
+                "<Keyboard>/quote",
+                ""
+            ]
+        }
+    ]
+}
