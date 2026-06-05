@@ -104,6 +104,9 @@ Assets/
 
 ---
 
+## 👀 LOGIC
+<img width="3808" height="2177" alt="Image" src="https://github.com/user-attachments/assets/392938b2-4b16-46ab-9af9-1aac57d784f2" />
+
 ## 🚀 실행 방법
 
 > 개발 환경 기준 실행 가이드입니다.
@@ -135,7 +138,7 @@ Assets/
 | 2026.06 | 통합 테스트, 버그 수정, 데모 빌드 완성 |
 
 
-## 시연 영상
+## 🔥 시연 영상
 https://youtu.be/Bs93Zv1I3fI
 
 ---
